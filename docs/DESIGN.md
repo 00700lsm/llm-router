@@ -2,16 +2,27 @@
 
 ## 1. 문서 목적
 
-이 문서는 LLM Router의 **현재 Baseline 설계**를 설명한다.
+이 문서는 LLM Router의 **현재 설계**를 설명한다.
 
 `REQUIREMENTS.md`가 무엇을 만족해야 하는지 정의하고  
 `ROADMAP.md`가 어떤 문제를 어떤 순서로 확인할지 정의한다면,
 
-`DESIGN.md`는 현재 Phase에서 실제로 구현할 구조와 각 Component의 책임을 설명한다.
+`DESIGN.md`는 현재 코드에 있는 구조와 각 Component의 책임을 설명한다.
 
-현재 프로젝트는 **Phase 1 - Baseline Router 구현 단계**를 기준으로 한다.
+현재 구현된 Routing 구조는 Baseline Router다.
 
-따라서 이후 Phase에서 검토할 수 있는 다음 구조는 현재 DESIGN에 포함하지 않는다.
+```text
+strategy = BASELINE_DEFAULT
+모든 일반 Request → Configured Default Model
+```
+
+재평가 기록:
+
+```text
+docs/experiments/008-routing-re-evaluation.md
+```
+
+다음 구조는 현재 DESIGN에 포함하지 않는다.
 
 ```text
 Semantic Routing

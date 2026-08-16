@@ -231,6 +231,7 @@ docs/experiments/004-quality-cost-latency.md
 docs/experiments/005-routing-policy-limit.md
 docs/experiments/006-capability.md
 docs/experiments/007-provider-failure.md
+docs/experiments/008-routing-re-evaluation.md
 ```
 
 ---

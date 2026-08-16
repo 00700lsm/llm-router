@@ -1,0 +1,1114 @@
+---
+description: LLM Router 프로젝트의 개발 원칙, Harness, Evaluation, Experiment, Human Gate 규칙
+globs:
+alwaysApply: true
+---
+
+# LLM Router Project Rule
+
+## 1. Core Principle
+
+AI는 구현 속도를 높이는 도구로 사용한다.
+
+요구사항, 성공 기준, Architecture, Routing Policy, Evaluation 기준,
+기술 선택에 대한 최종 판단은 개발자가 통제한다.
+
+다음 원칙을 항상 유지한다.
+
+```text
+기술을 사용했다
+≠
+문제를 해결했다
+
+코드가 동작한다
+≠
+품질이 좋다
+
+변경했다
+≠
+개선됐다
+
+복잡한 구조를 만들었다
+≠
+좋은 설계다
+```
+
+측정하거나 검증하지 않은 개선을 개선이라고 표현하지 않는다.
+
+---
+
+# 2. Repository를 Source of Truth로 사용한다
+
+대화 Context보다 Repository의 문서를 우선한다.
+
+작업 전 현재 Phase와 관련된 문서를 확인한다.
+
+```text
+docs/
+├── REQUIREMENTS.md
+├── DESIGN.md
+├── ROADMAP.md
+├── TASKS.md
+├── adr/
+└── experiments/
+
+evaluation/
+
+.cursor/
+└── rules/
+
+README.md
+```
+
+각 문서의 역할을 섞지 않는다.
+
+```text
+REQUIREMENTS
+→ 무엇을 만족해야 하는가
+
+DESIGN
+→ 현재 시스템이 실제로 어떻게 구현되어 있는가
+
+ROADMAP
+→ 어떤 문제를 어떤 순서로 확인할 것인가
+
+TASKS
+→ 현재 Phase에서 무엇을 해야 하는가
+
+ADR
+→ 왜 해당 선택을 했는가
+
+EXPERIMENT
+→ 어떤 문제를 확인했고 실제 결과가 무엇이었는가
+
+EVALUATION
+→ Router의 판단과 결과를 어떤 기준으로 평가하는가
+
+README
+→ 사람이 프로젝트를 실행하고 검증하기 위한 진입점
+```
+
+문서와 코드가 충돌하면 임의로 판단하지 않는다.
+
+현재 구현을 확인하고 문서 갱신이 필요한지 판단한다.
+
+---
+
+# 3. DESIGN은 현재 상태만 기록한다
+
+DESIGN.md에는 현재 코드에 존재하지 않는 미래 구조를 현재 Architecture처럼 기록하지 않는다.
+
+잘못된 예:
+
+```text
+현재는 단순 Router이지만
+향후 Semantic Routing + Cascade + Fallback 구조로 구성한다.
+```
+
+ROADMAP에 존재하는 기능은 아직 DESIGN이 아니다.
+
+기술이 실제로 선택되고 구현된 이후 DESIGN에 반영한다.
+
+```text
+ROADMAP
+→ 앞으로 확인할 문제
+
+DESIGN
+→ 현재 실제 구조
+```
+
+DESIGN과 실제 코드가 가능한 한 일치하도록 유지한다.
+
+---
+
+# 4. ROADMAP은 기술 적용 순서가 아니다
+
+ROADMAP은 해결 기술 목록이 아니라 문제 확인 순서로 작성한다.
+
+피한다:
+
+```text
+Phase 3 Semantic Router 구현
+
+Phase 4 Cascade 구현
+
+Phase 5 Routing Cache 구현
+```
+
+선호한다:
+
+```text
+Phase 3 Routing Failure 분석
+
+Phase 4 Quality / Cost Trade-off 확인
+
+Phase 5 Routing Latency 분석
+```
+
+다음 원칙을 유지한다.
+
+```text
+Phase에 도달했다
+≠
+해당 기술을 반드시 도입한다
+```
+
+실험 결과 도입 근거가 없다면 해당 기술을 사용하지 않아도 된다.
+
+---
+
+# 5. 현재 Phase를 벗어나지 않는다
+
+현재 TASK와 Phase에서 요구하지 않는 기능을 선제 구현하지 않는다.
+
+예를 들어 Baseline 단계에서는 명시적인 요구가 없다면 다음 기능을 미리 추가하지 않는다.
+
+```text
+Semantic Routing
+LLM-based Routing
+Model Cascade
+Routing Cache
+Dynamic Threshold
+Retry
+Fallback
+Multi-Agent
+LangGraph
+복잡한 Cost Optimizer
+```
+
+ROADMAP에 존재한다는 이유만으로 구현하지 않는다.
+
+미래 Phase의 코드를 현재 Phase에 미리 넣지 않는다.
+
+---
+
+# 6. Baseline First
+
+Baseline은 가능한 한 단순하게 유지한다.
+
+초기 목표는 최고의 Router를 만드는 것이 아니다.
+
+```text
+Request
+   ↓
+Routing Decision
+   ↓
+Selected Model
+   ↓
+LLM
+   ↓
+Response
+```
+
+먼저 이 최소 흐름을 구현하고 관찰 가능하게 만든다.
+
+Baseline 이전에 최적화를 하지 않는다.
+
+---
+
+# 7. 문제를 해결하기 전에 먼저 재현한다
+
+기술을 추가하기 전에 해결하려는 문제가 실제로 존재하는지 확인한다.
+
+잘못된 흐름:
+
+```text
+Provider는 실패할 수 있다
+↓
+Fallback 구현
+```
+
+선호하는 흐름:
+
+```text
+Provider Failure 재현
+↓
+현재 동작 확인
+↓
+영향 측정
+↓
+원인 분석
+↓
+후보 비교
+↓
+필요하면 Fallback 구현
+```
+
+다음 순서를 기본으로 사용한다.
+
+```text
+Baseline
+↓
+Failure Reproduction
+↓
+Measurement
+↓
+Analysis
+↓
+Candidate Comparison
+↓
+Human Gate
+↓
+Implementation
+↓
+Re-Evaluation
+```
+
+문제가 재현되지 않았다면 해결 기술을 억지로 추가하지 않는다.
+
+---
+
+# 8. Test와 Evaluation을 구분한다
+
+Test 성공을 LLM Router 품질 성공으로 해석하지 않는다.
+
+```text
+Test
+→ 코드가 정상 동작하는가
+
+Evaluation
+→ Router의 판단과 결과가 적절한가
+```
+
+예:
+
+```text
+API가 HTTP 200을 반환한다
+≠
+적절한 Model을 선택했다
+```
+
+```text
+Model 호출에 성공했다
+≠
+Quality / Cost / Latency가 적절하다
+```
+
+기능 정확성과 AI 품질을 별도로 검증한다.
+
+---
+
+# 9. Routing Decision은 관찰 가능해야 한다
+
+최종 Response만 확인하지 않는다.
+
+가능하면 다음 정보를 추적할 수 있도록 구현한다.
+
+```text
+Input
+
+Routing Feature / Input Signal
+
+Routing Decision
+
+Selected Model
+
+Routing Reason
+
+Model Response
+
+Latency
+
+Input Token
+
+Output Token
+
+Cost
+
+Provider Failure
+
+Retry / Fallback 여부
+```
+
+새로운 Routing 전략을 추가하면서 이 관측 가능성을 제거하지 않는다.
+
+---
+
+# 10. Evaluation Dataset을 Baseline의 일부로 취급한다
+
+Evaluation Dataset은 마지막에 만드는 부가 자료가 아니다.
+
+Baseline을 평가하기 위한 Harness의 일부로 사용한다.
+
+가능하면 각 Case에 다음 정보를 정의한다.
+
+```text
+Input
+
+Expected Condition
+
+Actual Route
+
+Selected Model
+
+Quality Result
+
+Latency
+
+Token Usage
+
+Cost
+```
+
+Expected Model 이름 하나만을 절대적인 정답으로 가정하지 않는다.
+
+여러 Model이 요구사항을 만족할 수 있다면 다음 조건 중심으로 평가한다.
+
+```text
+Quality Requirement
+
+Latency Requirement
+
+Cost Requirement
+
+Capability Requirement
+```
+
+---
+
+# 11. Evaluation Dataset을 구현에 맞춰 수정하지 않는다
+
+Metric을 높이기 위해 실패 Case를 삭제하지 않는다.
+
+금지:
+
+```text
+실패 Query 삭제
+
+어려운 Case 삭제
+
+Actual 결과에 맞춰 Expected 변경
+
+현재 구현이 맞도록 평가 기준 완화
+```
+
+실패는 Dataset에 유지한다.
+
+Evaluation Dataset 자체가 잘못됐다고 판단되는 경우에는
+왜 변경이 필요한지 먼저 설명한다.
+
+기존 Baseline과 비교 가능성을 깨는 변경은 Human Gate 대상이다.
+
+---
+
+# 12. 실패 위치를 분리한다
+
+최종 Answer가 나쁘다는 이유만으로 Router를 바로 수정하지 않는다.
+
+먼저 Failure Type을 분리한다.
+
+가능한 Failure:
+
+```text
+ROUTING_FAILURE
+
+MODEL_QUALITY_FAILURE
+
+PROMPT_FAILURE
+
+LATENCY_FAILURE
+
+COST_INEFFICIENCY
+
+PROVIDER_FAILURE
+
+FALLBACK_FAILURE
+
+EVALUATION_FAILURE
+```
+
+예:
+
+```text
+Answer Quality 낮음
+↓
+Router가 잘못된 Model을 선택했는가?
+        ↓ NO
+선택된 Model 자체의 품질 문제인가?
+        ↓ NO
+Prompt 또는 Evaluation 문제인가?
+```
+
+실패가 발생한 Layer를 확인한 뒤 해당 Layer만 수정한다.
+
+---
+
+# 13. Quality / Cost / Latency를 하나의 Metric으로 숨기지 않는다
+
+최소한 다음 축은 별도로 관찰한다.
+
+```text
+Routing Quality
+
+Answer / Task Quality
+
+Latency
+
+Input Token
+
+Output Token
+
+Cost
+
+Fallback Rate
+```
+
+Quality가 증가했지만 Cost와 Latency가 증가했다면 모두 기록한다.
+
+한 Metric이 좋아졌다는 이유만으로 전체 시스템이 개선됐다고 표현하지 않는다.
+
+Trade-off를 그대로 기록한다.
+
+---
+
+# 14. 동일 조건으로 Before / After를 비교한다
+
+가능하면 하나의 실험에서는 하나의 변수만 변경한다.
+
+비교 시 다음 조건을 최대한 유지한다.
+
+```text
+동일 Evaluation Dataset
+
+동일 Input
+
+동일 Prompt
+
+동일 Model Version
+
+동일 Parameter
+
+동일 Runtime 조건
+
+동일 평가 기준
+```
+
+Routing Policy를 비교하면서 동시에 Prompt와 Dataset까지 변경하지 않는다.
+
+조건이 달라졌다면 Experiment에 명시한다.
+
+비교 조건이 다르면 직접적인 Before / After 개선이라고 표현하지 않는다.
+
+---
+
+# 15. 측정하지 않은 주장을 하지 않는다
+
+다음과 같은 표현은 실제 Metric이 있을 때만 사용한다.
+
+```text
+품질이 개선됐다.
+
+비용이 절감됐다.
+
+Latency가 개선됐다.
+
+Routing이 정확해졌다.
+
+더 효율적이다.
+
+더 안정적이다.
+```
+
+측정하지 않았다면 다음 수준으로 표현한다.
+
+```text
+후보로 판단한다.
+
+도입 가능성이 있다.
+
+현재 구조에서는 필요성이 확인되지 않았다.
+
+비교 실험이 필요하다.
+```
+
+---
+
+# 16. 기술을 먼저 정답으로 두지 않는다
+
+다음과 같은 이유만으로 기술을 도입하지 않는다.
+
+```text
+일반적으로 좋다고 알려져 있다.
+
+LLM Router에서 많이 사용한다.
+
+학습하고 싶은 기술이다.
+
+AI가 추천했다.
+
+ROADMAP에 적혀 있다.
+```
+
+기술 도입은 Failure와 Evaluation 결과를 근거로 한다.
+
+```text
+Failure
+↓
+Metric
+↓
+Cause
+↓
+Candidates
+↓
+Trade-off
+↓
+Human Gate
+↓
+Decision
+```
+
+---
+
+# 17. 사용하지 않은 기술도 정상적인 결과다
+
+검토한 기술을 사용하지 않기로 결정할 수 있다.
+
+예:
+
+```text
+Semantic Routing
+Model Cascade
+LLM Routing
+Routing Cache
+Fallback
+LangGraph
+Multi-Agent
+```
+
+도입 근거가 충분하지 않다면 사용하지 않는다.
+
+단 다음 두 표현을 구분한다.
+
+```text
+현재 문제에서는 사용하지 않았다.
+```
+
+와:
+
+```text
+효과가 없었다.
+```
+
+비교 실험이 없다면 "효과가 없었다"고 주장하지 않는다.
+
+---
+
+# 18. Experiment는 문제 중심으로 작성한다
+
+Experiment 파일 이름에 해결 방법을 미리 정답처럼 넣지 않는다.
+
+피한다:
+
+```text
+003-semantic-router.md
+004-model-cascade.md
+005-routing-cache.md
+```
+
+선호한다:
+
+```text
+003-routing-failure-analysis.md
+004-quality-cost-tradeoff.md
+005-routing-latency.md
+006-provider-failure.md
+```
+
+Experiment는 가능한 한 하나의 질문에 답하도록 작성한다.
+
+기본 구조:
+
+```text
+Problem / Question
+
+Hypothesis
+
+Conditions
+
+Baseline
+
+Result
+
+Analysis
+
+Candidate
+
+Decision
+
+Remaining Limitation
+```
+
+실험 결과가 가설과 달라도 그대로 기록한다.
+
+---
+
+# 19. Human Gate는 중요한 정책 결정에만 사용한다
+
+단순 구현마다 Human Gate를 요청하지 않는다.
+
+다음 작업은 요구사항과 설계가 명확하다면 AI가 진행할 수 있다.
+
+```text
+DTO 구현
+
+단순 Service 구현
+
+Repository 구현
+
+기존 Pattern을 따르는 Refactoring
+
+Unit Test 추가
+
+Logging 추가
+
+명확한 Bug Fix
+```
+
+다음과 같이 시스템의 의미나 평가 기준을 변경하는 작업은 Human Gate 대상이다.
+
+```text
+Routing Policy 변경
+
+Routing 기준 변경
+
+Model 추가 / 제거
+
+Provider 추가 / 제거
+
+Model 역할 변경
+
+Threshold 변경
+
+Fallback 정책 변경
+
+Retry 정책 변경
+
+Quality 기준 변경
+
+Cost 기준 변경
+
+Latency 기준 변경
+
+Evaluation Dataset의 Expected 변경
+
+새 Routing Architecture 도입
+
+LangGraph 도입
+
+Multi-Agent 도입
+```
+
+---
+
+# 20. Human Gate 형식을 유지한다
+
+Human Gate가 필요한 경우 바로 구현하지 않는다.
+
+다음 형식으로 개발자에게 보고한다.
+
+```text
+현재 문제 / Failure Case
+
+Metric
+
+재현 조건
+
+원인 분석
+
+후보 A
+- 장점
+- 단점
+
+후보 B
+- 장점
+- 단점
+
+필요하면 후보 C
+- 장점
+- 단점
+
+추천안
+
+추천 이유
+
+예상 Trade-off
+
+STOP
+```
+
+Developer Decision 이전에는 해당 Architecture 변경을 구현하지 않는다.
+
+---
+
+# 21. Human Gate를 불필요하게 늘리지 않는다
+
+목표는 모든 판단을 사람에게 넘기는 것이 아니다.
+
+```text
+반복 가능
++
+판단 기준 명확
++
+Architecture 의미 변경 없음
+```
+
+인 작업은 AI가 수행한다.
+
+Human Gate는 개발자가 책임져야 하는 결정에 집중한다.
+
+```text
+불필요한 Human Gate 감소
++
+중요한 Human Gate 품질 향상
+```
+
+을 목표로 한다.
+
+---
+
+# 22. ADR은 Decision의 이유를 기록한다
+
+ADR에는 단순히 사용 기술만 기록하지 않는다.
+
+피한다:
+
+```text
+Semantic Router를 사용한다.
+```
+
+ADR에는 최소한 다음 내용을 기록한다.
+
+```text
+Context / Problem
+
+Measured Evidence
+
+Candidates
+
+Trade-offs
+
+Decision
+
+Why
+
+Consequences
+
+Remaining Limitations
+```
+
+ADR은 기술 목록이 아니라 판단 과정의 기록이다.
+
+---
+
+# 23. 문제 재현과 해결을 Git에서 분리한다
+
+가능하면 다음 상태를 각각 Checkpoint로 남긴다.
+
+```text
+Baseline
+
+Failure Reproduction
+
+Solution Implementation
+
+Re-Evaluation
+```
+
+문제를 재현한 코드와 해결 코드를 한 Commit에 섞지 않는다.
+
+예:
+
+```text
+feat: implement baseline router
+
+experiment: reproduce routing failures
+
+experiment: measure baseline routing quality
+
+fix: adjust routing policy
+
+experiment: evaluate routing policy change
+```
+
+Git History에서 다음 흐름을 추적할 수 있어야 한다.
+
+```text
+Baseline
+↓
+Failure
+↓
+Analysis
+↓
+Decision
+↓
+Change
+↓
+Result
+```
+
+---
+
+# 24. README는 Phase 1부터 유지한다
+
+README를 프로젝트 종료 시점에 몰아서 작성하지 않는다.
+
+Baseline이 완료되면 최소한 다음 내용이 있어야 한다.
+
+```text
+Project Goal
+
+Current Architecture
+
+Run
+
+Environment Variables
+
+Provider / Model Configuration
+
+API Usage
+
+Test
+
+Evaluation
+
+Experiment Location
+
+Known Limitations
+```
+
+프로젝트 구조나 실행 방법이 바뀌면 README도 함께 검토한다.
+
+---
+
+# 25. Rule과 Skill을 구분한다
+
+Rule은 프로젝트 전체에서 항상 지켜야 하는 제약이다.
+
+```text
+Rule
+→ 항상 지켜야 하는 원칙
+```
+
+Skill은 반복적으로 발견된 특정 Workflow다.
+
+```text
+Skill
+→ 반복되는 작업 절차
+```
+
+반복 여부가 확인되지 않은 Workflow를 미리 Skill로 만들지 않는다.
+
+기본 순서:
+
+```text
+Rule
+↓
+실제 개발
+↓
+반복 Workflow 발견
+↓
+Skill 후보 판단
+↓
+필요하면 Skill 추출
+```
+
+---
+
+# 26. 반복 Workflow는 자동화 후보로 본다
+
+다음과 같은 과정이 반복된다면 자동화 또는 Skill 후보로 판단한다.
+
+```text
+Evaluation 실행
+↓
+Expected / Actual 비교
+↓
+Quality / Cost / Latency 집계
+↓
+Failure Case 분류
+↓
+Experiment 기록
+```
+
+하지만 반복이 확인되기 전에 복잡한 Workflow Automation을 만들지 않는다.
+
+먼저 Script 또는 Evaluation Runner로 해결 가능한지 확인한다.
+
+---
+
+# 27. Agent / Graph를 기본값으로 사용하지 않는다
+
+Workflow가 존재한다고 바로 Agent나 Graph로 구현하지 않는다.
+
+우선순위:
+
+```text
+단순 코드
+↓
+Script
+↓
+Test / Evaluation Runner
+↓
+Human-controlled Loop
+↓
+필요성이 확인되면 Agent / Graph 검토
+```
+
+다음 이유만으로 LangGraph 또는 Multi-Agent를 도입하지 않는다.
+
+```text
+Agent 프로젝트이기 때문에
+
+Workflow가 여러 단계이기 때문에
+
+학습하고 싶기 때문에
+
+AI가 추천했기 때문에
+```
+
+명시적인 State 관리와 여러 Loop의 연결이 실제 문제로 확인될 때 검토한다.
+
+---
+
+# 28. 구현 과정에서 기존 Complexity를 우선 재사용한다
+
+새로운 Abstraction이나 Layer를 추가하기 전에 기존 구조로 해결 가능한지 확인한다.
+
+특히 Baseline 단계에서 다음을 피한다.
+
+```text
+불필요한 Interface 계층
+
+미래 Provider를 위한 과도한 추상화
+
+아직 존재하지 않는 요구사항을 위한 확장 포인트
+
+사용되지 않는 Generic Framework
+
+불필요한 Factory / Strategy 계층
+```
+
+현재 요구사항을 만족하는 가장 단순한 구조부터 시작한다.
+
+새 Complexity에는 실제 이유가 있어야 한다.
+
+---
+
+# 29. 실패와 한계를 숨기지 않는다
+
+Requirement를 완전히 만족하지 못했다면 그대로 기록한다.
+
+다음을 하지 않는다.
+
+```text
+부분 성공을 완전 성공으로 표현
+
+실패 Case 삭제
+
+측정되지 않은 개선 주장
+
+남아 있는 한계 생략
+```
+
+Experiment와 README에 알려진 한계를 남긴다.
+
+실패 역시 프로젝트의 결과다.
+
+---
+
+# 30. 작업 완료 조건
+
+AI가 코드를 작성했다는 이유만으로 Task를 완료 처리하지 않는다.
+
+현재 Task에 정의된 완료 조건을 확인한다.
+
+일반적인 흐름:
+
+```text
+Implementation
+↓
+Test
+↓
+필요하면 Evaluation
+↓
+결과 확인
+↓
+관련 문서 동기화
+↓
+완료
+```
+
+Evaluation이 필요한 Phase에서는 Test만 통과했다고 DONE으로 판단하지 않는다.
+
+---
+
+# 31. 작업 시작 시 행동 원칙
+
+새로운 Task를 받을 때 다음 순서를 따른다.
+
+1. 현재 REQUIREMENTS를 확인한다.
+2. 현재 DESIGN을 확인한다.
+3. ROADMAP에서 현재 Phase를 확인한다.
+4. TASKS에서 현재 작업 범위를 확인한다.
+5. 관련 Experiment / ADR이 있다면 확인한다.
+6. 현재 Phase 범위 안에서 가장 단순한 구현 계획을 세운다.
+7. Human Gate가 필요한 결정이 없다면 구현한다.
+8. Human Gate가 필요하면 구현 전에 STOP한다.
+
+이미 Repository에 존재하는 결정사항을 사용자가 다시 설명하게 만들지 않는다.
+
+---
+
+# 32. Final Development Loop
+
+프로젝트 전체에서는 다음 Loop를 기본으로 사용한다.
+
+```text
+REQUIREMENTS
+      ↓
+ROADMAP
+      ↓
+TASK
+      ↓
+PLAN
+      ↓
+IMPLEMENT
+      ↓
+TEST
+      ↓
+EVALUATE
+      ↓
+FAILURE CASE
+      ↓
+ANALYZE
+      ↓
+CANDIDATES
+      ↓
+HUMAN GATE
+      ↓
+DECIDE
+      ↓
+IMPLEMENT
+      ↓
+RE-EVALUATE
+      ↓
+ADR / DESIGN
+      ↓
+COMMIT
+      ↓
+NEXT TASK
+```
+
+항상 모든 단계를 기계적으로 실행해야 하는 것은 아니다.
+
+현재 Task에 필요하지 않은 단계는 생략할 수 있다.
+
+하지만 다음 세 가지는 생략하지 않는다.
+
+```text
+문제 없는 척하고 해결책부터 구현하지 않는다.
+
+검증 없이 개선됐다고 주장하지 않는다.
+
+중요한 정책 결정을 개발자 승인 없이 변경하지 않는다.
+```

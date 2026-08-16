@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 4
-Routing Failure 분석
+Phase 5
+Quality / Cost / Latency Trade-off 확인
 ```
 
 상태:
@@ -25,60 +25,60 @@ DONE
 
 목표:
 
-Phase 3에서 발견한 실패가
-Router 문제인지 다른 계층의 문제인지 분리한다.
+요구 품질을 만족하면서 Cost와 Latency가
+Model 선택에 따라 어떻게 달라지는지 확인한다.
 
-이 Phase에서는 Routing Policy를 바꾸지 않는다.
+하나의 종합 Score로 합치지 않는다.
+이 Phase에서 Routing Policy를 바꾸지 않는다.
 
 ---
 
-# 2. Phase 3 결과
+# 2. Phase 4 결과
 
 ```text
-Router 경로로 Dataset 7 Case를 실행했다.
+현재 정책 위반 ROUTING_FAILURE는 없다.
 
-7 / 7 selectedModel = model-small
-strategy = BASELINE_DEFAULT
+simple-003 = MODEL_QUALITY_FAILURE
+            + ROUTING_FAILURE 후보 (large면 Checklist PASS)
 
-호출 성공 5 / 7
-Quality PASS 4 / 7
+reasoning-001 / reasoning-002 = PROVIDER_FAILURE (HTTP 429)
 
-실패:
-simple-003 Quality FAIL (JSON 형식)
-reasoning-001 HTTP 429 RATE_LIMIT
-reasoning-002 HTTP 429 RATE_LIMIT
+CAPABILITY / COST_INEFFICIENCY / LATENCY_FAILURE
+= 현재 Dataset에 실제 Case 없음
 ```
 
-Phase 4는 이 실패를 분류한다. Router는 바꾸지 않는다.
-
-비교에 쓰는 Direct Model 결과는 Phase 2 Experiment다.
+Phase 5 비교에 쓰는 측정은 Phase 2 Direct Model 결과다.
 
 ```text
 docs/experiments/001-model-baseline.md
-docs/experiments/002-baseline-routing.md
+evaluation/results/001-model-baseline.json
+Gemini 2차: model-small = gemini-2.5-flash
+            model-large = gemini-3.5-flash
 ```
 
 새 Provider 호출을 이 Phase의 완료 조건으로 두지 않는다.
+
+Router 경로 결과와 Direct Model 결과를 같은 표에 섞지 않는다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-실패한 Case의 Failure Type은 무엇인가?
+작은 Model로 충분한 Request는 무엇인가?
 
-Router가 현재 정책과 다르게 Model을 선택했는가?
+큰 Model을 사용했을 때 Quality가 실제로 얼마나 증가하는가?
 
-같은 실패가 Model Quality / Prompt / Provider 문제인가?
+Quality 증가에 비해 Cost 증가는 어느 정도인가?
 
-Cost / Latency Failure가 실제로 있는가?
+Latency 증가는 정당화되는가?
 
-Capability Mismatch Case가 현재 Dataset에 있는가?
+같은 품질을 더 낮은 비용으로 처리할 수 있는 Case가 있는가?
 ```
 
 ---
 
-# 4. Phase 4에서 하지 않을 것
+# 4. Phase 5에서 하지 않을 것
 
 ```text
 Routing Policy 변경
@@ -91,11 +91,9 @@ Cascade
 
 Threshold 조정
 
-Prompt 대규모 수정
+Quality / Cost / Latency를 한 Score로 합치기
 
-Fallback / Retry
-
-Failure Type Enum을 Runtime에 넣기
+Max Cost / Max Latency를 Dataset Expected에 넣기
 
 Quality Judge를 Runtime Routing에 사용
 
@@ -115,17 +113,18 @@ Capability / Long Context Case 선제 추가
 ```text
 Routing Policy 변경
 
-Quality 기준을 Runtime Routing에 사용
+Request 유형별 Model 역할 정의
 
-Evaluation Dataset Expected를 결과 맞춰 수정
+Quality 최소 기준 변경
 
-Failure Type을 Runtime Decision에 사용
+Cost 상한 / Latency 상한 Dataset 추가
+
+종합 Score 도입
 
 simple-003 형식 FAIL을 Routing 신호로 쓰기
 ```
 
-이 Phase의 분류는 Experiment 판단이다.
-분류 결과가 바로 Policy 변경은 아니다.
+비교 결과가 바로 Policy 변경은 아니다.
 
 ---
 
@@ -133,29 +132,27 @@ simple-003 형식 FAIL을 Routing 신호로 쓰기
 
 ---
 
-## T4-01. 실패 Case 분류
+## T5-01. Case별 Quality / Cost / Latency 비교
 
 상태: `DONE`
 
 목적:
 
-Phase 3 실패와 Phase 2 Direct Model 결과를 같은 Case로 맞춰
-Failure Type을 분리한다.
+동일 Dataset에서 두 Model의 Quality, Cost, Latency를
+한 축으로 합치지 않고 비교한다.
 
 확인 범위:
 
 ```text
-Request Type
+Case별 Quality
 
-Selected Model
+Case별 Latency
 
-Routing Reason
+Case별 Estimated Cost
 
-Router 경로 Quality / errorCode
+small로 Checklist를 만족하는 Case
 
-Direct Model Quality
-
-Failure Type
+large만 Checklist를 만족하는 Case
 ```
 
 하지 않을 것:
@@ -163,76 +160,73 @@ Failure Type
 ```text
 Router 변경
 
-새 Evaluation Runner 경로 추가
+새 Evaluation Runner
 
-Failure Type을 Chat API 응답에 넣기
+종합 Score
 ```
 
 완료 조건:
 
 ```text
-Phase 3 실패 Case를 분류했다.
+Model별 Quality / Cost / Latency를 따로 기록했다.
 
-Routing Failure와 Model Quality Failure를 구분했다.
+작은 Model로 충분한 Case를 확인했다.
 
-Cost / Latency Failure를 별도로 확인했다.
-
-유형별 실제 Case 존재 여부를 기록했다.
+큰 Model이 필요한 Case가 실제로 있는지 기록했다.
 ```
 
 관련:
 
 ```text
-REQUIREMENTS FR-17, FR-18
-ROADMAP Phase 4
-DESIGN 21
+REQUIREMENTS FR-15, NFR-03, NFR-09
+ROADMAP Phase 5
+DESIGN 19.2
 ```
 
 ---
 
-## T4-02. Experiment 기록
+## T5-02. Experiment 기록
 
 상태: `DONE`
 
 목적:
 
-분류 결과를 문제 중심으로 남긴다.
+Trade-off를 문제 중심으로 남긴다.
 
 파일:
 
 ```text
-docs/experiments/003-routing-failure-analysis.md
+docs/experiments/004-quality-cost-latency.md
 ```
 
 완료 조건:
 
 ```text
-Case별 Failure Type을 기록했다.
+Quality / Cost / Latency를 한 Score로 합치지 않았다.
 
 측정값과 해석을 구분했다.
 
-실패 Case를 삭제하지 않았다.
+Routing 기준 변경이 필요한지 판단할 수 있다.
 
 Router를 바꾸지 않기로 한 결정을 명시했다.
 ```
 
 ---
 
-## T4-03. DESIGN / README / TASKS 동기화
+## T5-03. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
 
 목적:
 
-Failure 분류가 Experiment에서 이뤄진 현재 상태를 문서에 맞춘다.
+Trade-off 비교 위치를 문서에 맞춘다.
 
 완료 조건:
 
 ```text
-DESIGN 21이 Runtime에 Failure Type이 없다는 점과
-Experiment 분류 위치를 반영한다.
+DESIGN이 현재 구조만 기록한다.
 
-README에서 Experiment 003을 확인할 수 있다.
+README에서 Experiment 004를 확인할 수 있다.
 
 없는 미래 구조를 DESIGN에 넣지 않는다.
 ```
@@ -242,32 +236,30 @@ README에서 Experiment 003을 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T4-01 실패 Case 분류
+T5-01 Case별 비교
       ↓
-T4-02 Experiment
+T5-02 Experiment
       ↓
-T4-03 문서 동기화
+T5-03 문서 동기화
 ```
 
 ---
 
-# 8. Phase 4 완료 조건
+# 8. Phase 5 완료 조건
 
-ROADMAP Phase 4 완료 조건과 같다.
+ROADMAP Phase 5 완료 조건과 같다.
 
 ```text
-Baseline 실패 Case를 분류했다.
+Model별 Quality / Cost / Latency Trade-off를 비교했다.
 
-Routing Failure와 Model Quality Failure를 구분했다.
+작은 Model로 충분한 Case를 확인했다.
 
-Cost / Latency Failure를 별도로 확인했다.
+큰 Model이 필요한 Case가 실제로 존재하는지 확인했다.
 
-실패 유형별 실제 Case가 존재하는지 확인했다.
-
-다음 Phase에서 검토할 문제를 정리했다.
+Routing 기준 변경이 필요한지 판단할 수 있다.
 ```
 
-분류만으로 Phase 4는 완료될 수 있다.
+비교만으로 Phase 5는 완료될 수 있다.
 Routing Policy를 바꾸지 않고도 완료될 수 있다.
 
 ---
@@ -275,16 +267,16 @@ Routing Policy를 바꾸지 않고도 완료될 수 있다.
 # 9. Git Checkpoint
 
 ```text
-experiment: analyze routing failures
+experiment: analyze quality cost latency tradeoff
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 4가 완료된 뒤에만 연다.
+Phase 5가 완료된 뒤에만 연다.
 
 ```text
-Phase 5
-Quality / Cost / Latency Trade-off 확인
+Phase 6
+Routing 기준의 한계 확인
 ```

@@ -1052,6 +1052,14 @@ Estimated Cost
 
 Router Evaluation 결과와 Direct Model Evaluation 결과를 섞지 않는다.
 
+Case별 Quality / Cost / Latency 비교는 Experiment에서 수행한다.
+
+```text
+docs/experiments/004-quality-cost-latency.md
+```
+
+Quality / Cost / Latency를 하나의 Score로 합치지 않는다.
+
 ---
 
 # 20. Quality 평가

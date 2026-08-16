@@ -51,6 +51,39 @@ class BaselineRouterTest {
     }
 
     @Test
+    void selectsDefaultEvenWhenDefaultLacksToolCalling() {
+        ModelCatalog catalog = new ModelCatalog(
+                List.of(TestModels.smallWithoutToolCalling(), TestModels.large()),
+                "model-small"
+        );
+        BaselineRouter router = new BaselineRouter(catalog);
+
+        RoutingDecision decision = router.route("req-1", "날씨 API를 호출하는 tool이 필요해.");
+
+        assertThat(decision.selectedModel()).isEqualTo("model-small");
+        assertThat(decision.strategy()).isEqualTo(RoutingStrategy.BASELINE_DEFAULT);
+        assertThat(catalog.getRequired("model-small").toolCalling()).isFalse();
+        assertThat(catalog.getRequired("model-large").toolCalling()).isTrue();
+    }
+
+    @Test
+    void selectsDefaultEvenWhenMessageExceedsContextLimit() {
+        ModelCatalog catalog = new ModelCatalog(
+                List.of(TestModels.smallWithContextLimit(8), TestModels.large()),
+                "model-small"
+        );
+        BaselineRouter router = new BaselineRouter(catalog);
+        String message = "this message is longer than eight";
+
+        RoutingDecision decision = router.route("req-1", message);
+
+        assertThat(message.length()).isGreaterThan(8);
+        assertThat(decision.selectedModel()).isEqualTo("model-small");
+        assertThat(decision.strategy()).isEqualTo(RoutingStrategy.BASELINE_DEFAULT);
+        assertThat(catalog.getRequired("model-small").contextLimit()).isEqualTo(8);
+    }
+
+    @Test
     void failsWhenDefaultModelIsNotConfigured() {
         ModelCatalog catalog = new ModelCatalog(List.of(TestModels.small()), null);
         BaselineRouter router = new BaselineRouter(catalog);

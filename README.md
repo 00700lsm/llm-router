@@ -226,6 +226,7 @@ Router 경로 실행 Test:
 ```text
 docs/experiments/001-model-baseline.md
 docs/experiments/002-baseline-routing.md
+docs/experiments/003-routing-failure-analysis.md
 ```
 
 ---

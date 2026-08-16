@@ -1094,9 +1094,15 @@ Answer의 미묘한 품질 차이를 완전히 측정한다고 해석하지 않�
 현재 Evaluation Result는 실행 성공/실패, Selected Model,
 Quality Checklist, Latency, Token, Cost, Error Code를 남긴다.
 
-Failure Type 분류는 아직 구현하지 않았다.
+Failure Type Enum은 Runtime과 Evaluation Result에 넣지 않았다.
 
-이후 Evaluation에서 필요하면 다음 후보를 사용한다.
+분류는 Experiment에서 수행한다.
+
+```text
+docs/experiments/003-routing-failure-analysis.md
+```
+
+사용 중인 Failure Type:
 
 ```text
 ROUTING_FAILURE
@@ -1112,6 +1118,16 @@ COST_INEFFICIENCY
 PROVIDER_FAILURE
 
 EVALUATION_FAILURE
+```
+
+현재 Dataset에서 확인한 위치:
+
+```text
+현재 정책 위반 ROUTING_FAILURE: 없음
+ROUTING_FAILURE 후보: simple-003
+MODEL_QUALITY_FAILURE: simple-003
+PROVIDER_FAILURE: reasoning-001, reasoning-002
+CAPABILITY_MISMATCH / COST_INEFFICIENCY / LATENCY_FAILURE: 현재 Dataset에 실제 Case 없음
 ```
 
 예:
@@ -1130,13 +1146,17 @@ Quality PASS
 → ROUTING_FAILURE 후보
 ```
 
+이 예시는 simple-003에 해당한다.
+현재 정책 위반으로 확정하지 않았다.
+
 반대로:
 
 ```text
 의도한 Model 선택
 ↓
-모든 Model Quality FAIL
+Provider 호출 실패 (HTTP 429)
 
+→ PROVIDER_FAILURE
 → Routing 문제라고 단정하지 않음
 ```
 

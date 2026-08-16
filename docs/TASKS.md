@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 3
-Baseline Routing 평가
+Phase 4
+Routing Failure 분석
 ```
 
 상태:
@@ -25,47 +25,60 @@ DONE
 
 목표:
 
-Phase 1 Baseline Router를 현재 Dataset으로 평가하고
-실패 Case를 수집한다.
+Phase 3에서 발견한 실패가
+Router 문제인지 다른 계층의 문제인지 분리한다.
 
-이 Phase에서는 발견한 문제를 바로 고치지 않는다.
+이 Phase에서는 Routing Policy를 바꾸지 않는다.
 
 ---
 
-# 2. Phase 2 결과
+# 2. Phase 3 결과
 
 ```text
-Direct Model Runner로 Model 특성을 측정했다.
+Router 경로로 Dataset 7 Case를 실행했다.
 
-model-small = gemini-2.5-flash
-model-large = gemini-3.5-flash
-
-Router는 바꾸지 않았다.
+7 / 7 selectedModel = model-small
 strategy = BASELINE_DEFAULT
+
+호출 성공 5 / 7
+Quality PASS 4 / 7
+
+실패:
+simple-003 Quality FAIL (JSON 형식)
+reasoning-001 HTTP 429 RATE_LIMIT
+reasoning-002 HTTP 429 RATE_LIMIT
 ```
 
-Phase 3는 이 Router를 바꾸지 않는다.
+Phase 4는 이 실패를 분류한다. Router는 바꾸지 않는다.
+
+비교에 쓰는 Direct Model 결과는 Phase 2 Experiment다.
+
+```text
+docs/experiments/001-model-baseline.md
+docs/experiments/002-baseline-routing.md
+```
+
+새 Provider 호출을 이 Phase의 완료 조건으로 두지 않는다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-Router는 어떤 Model을 선택하는가?
+실패한 Case의 Failure Type은 무엇인가?
 
-Simple Request에서 불필요하게 큰 Model을 선택하는가?
+Router가 현재 정책과 다르게 Model을 선택했는가?
 
-Reasoning Request에서 충분한 Model을 선택하는가?
+같은 실패가 Model Quality / Prompt / Provider 문제인가?
 
-Routing 결과가 Quality / Cost / Latency 조건을 만족하는가?
+Cost / Latency Failure가 실제로 있는가?
+
+Capability Mismatch Case가 현재 Dataset에 있는가?
 ```
-
-현재 Dataset에는 Capability Required Case가 없다.
-이 Phase에서 Capability Case를 미리 넣지 않는다.
 
 ---
 
-# 4. Phase 3에서 하지 않을 것
+# 4. Phase 4에서 하지 않을 것
 
 ```text
 Routing Policy 변경
@@ -74,7 +87,15 @@ Semantic Routing
 
 LLM-based Routing
 
+Cascade
+
+Threshold 조정
+
+Prompt 대규모 수정
+
 Fallback / Retry
+
+Failure Type Enum을 Runtime에 넣기
 
 Quality Judge를 Runtime Routing에 사용
 
@@ -98,10 +119,13 @@ Quality 기준을 Runtime Routing에 사용
 
 Evaluation Dataset Expected를 결과 맞춰 수정
 
-Allowed Models / Max Cost / Max Latency를 Dataset에 새로 넣어 평가 기준을 바꾸기
+Failure Type을 Runtime Decision에 사용
+
+simple-003 형식 FAIL을 Routing 신호로 쓰기
 ```
 
-Phase 3 Quality 기준은 기존 expectedCondition Checklist다.
+이 Phase의 분류는 Experiment 판단이다.
+분류 결과가 바로 Policy 변경은 아니다.
 
 ---
 
@@ -109,22 +133,29 @@ Phase 3 Quality 기준은 기존 expectedCondition Checklist다.
 
 ---
 
-## T3-01. Router Evaluation 결과 확장
+## T4-01. 실패 Case 분류
 
 상태: `DONE`
 
 목적:
 
-Router 경로 실행 결과에 Selected Model, Quality, Latency, Cost를 남긴다.
+Phase 3 실패와 Phase 2 Direct Model 결과를 같은 Case로 맞춰
+Failure Type을 분리한다.
 
-구현 범위:
+확인 범위:
 
 ```text
-EvaluationRunner
+Request Type
 
-Quality Evaluator 비교
+Selected Model
 
-결과 파일 저장
+Routing Reason
+
+Router 경로 Quality / errorCode
+
+Direct Model Quality
+
+Failure Type
 ```
 
 하지 않을 것:
@@ -132,110 +163,53 @@ Quality Evaluator 비교
 ```text
 Router 변경
 
-Failure Type Enum을 Runtime에 넣기
+새 Evaluation Runner 경로 추가
+
+Failure Type을 Chat API 응답에 넣기
 ```
 
 완료 조건:
 
 ```text
-Router 경로로 Dataset을 실행할 수 있다.
+Phase 3 실패 Case를 분류했다.
 
-Case별 Selected Model을 확인할 수 있다.
+Routing Failure와 Model Quality Failure를 구분했다.
 
-Quality / Latency / Cost를 확인할 수 있다.
+Cost / Latency Failure를 별도로 확인했다.
 
-결과가 evaluation/results에 저장된다.
-
-Test Double로 Runner Test가 있다.
+유형별 실제 Case 존재 여부를 기록했다.
 ```
 
 관련:
 
 ```text
-REQUIREMENTS FR-07, FR-15, FR-16
-ROADMAP Phase 3
-DESIGN 19.1
+REQUIREMENTS FR-17, FR-18
+ROADMAP Phase 4
+DESIGN 21
 ```
 
 ---
 
-## T3-02. Baseline Routing 측정 실행
+## T4-02. Experiment 기록
 
 상태: `DONE`
 
 목적:
 
-실제 Router 경로로 현재 Dataset을 실행한다.
-
-완료 조건:
-
-```text
-전체 Dataset을 Baseline Router로 실행했다.
-
-실행 결과를 파일로 남겼다.
-
-측정값과 추측을 구분한다.
-```
-
-실행 결과:
-
-```text
-결과 파일: evaluation/results/002-baseline-routing.json
-
-7 / 7 selectedModel = model-small
-strategy = BASELINE_DEFAULT
-
-호출 성공 5 / 7
-Quality PASS 4 / 7
-
-실패:
-simple-003 Quality FAIL (JSON 형식)
-reasoning-001 HTTP 429 RATE_LIMIT
-reasoning-002 HTTP 429 RATE_LIMIT
-```
-
----
-
-## T3-03. Experiment 기록
-
-상태: `DONE`
-
-목적:
-
-Router 평가 결과를 문제 중심으로 남긴다.
+분류 결과를 문제 중심으로 남긴다.
 
 파일:
 
 ```text
-docs/experiments/002-baseline-routing.md
-```
-
-포함할 내용:
-
-```text
-Problem / Question
-
-Hypothesis
-
-Conditions
-
-Baseline
-
-Result
-
-Analysis
-
-Decision
-
-Remaining Limitation
+docs/experiments/003-routing-failure-analysis.md
 ```
 
 완료 조건:
 
 ```text
-Case별 Selected Model을 기록했다.
+Case별 Failure Type을 기록했다.
 
-Quality / Cost / Latency를 따로 기록했다.
+측정값과 해석을 구분했다.
 
 실패 Case를 삭제하지 않았다.
 
@@ -244,20 +218,21 @@ Router를 바꾸지 않기로 한 결정을 명시했다.
 
 ---
 
-## T3-04. DESIGN / README / TASKS 동기화
+## T4-03. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
 
 목적:
 
-Router Evaluation 실행 방법을 문서에 맞춘다.
+Failure 분류가 Experiment에서 이뤄진 현재 상태를 문서에 맞춘다.
 
 완료 조건:
 
 ```text
-DESIGN 19.1이 현재 Router Evaluation 결과를 반영한다.
+DESIGN 21이 Runtime에 Failure Type이 없다는 점과
+Experiment 분류 위치를 반영한다.
 
-README에서 Router Evaluation 실행 방법을 확인할 수 있다.
+README에서 Experiment 003을 확인할 수 있다.
 
 없는 미래 구조를 DESIGN에 넣지 않는다.
 ```
@@ -267,52 +242,49 @@ README에서 Router Evaluation 실행 방법을 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T3-01 Runner
+T4-01 실패 Case 분류
       ↓
-T3-02 실제 측정
+T4-02 Experiment
       ↓
-T3-03 Experiment
-      ↓
-T3-04 문서 동기화
+T4-03 문서 동기화
 ```
 
 ---
 
-# 8. Phase 3 완료 조건
+# 8. Phase 4 완료 조건
 
-ROADMAP Phase 3 완료 조건과 같다.
+ROADMAP Phase 4 완료 조건과 같다.
 
 ```text
-Baseline Router를 전체 Dataset으로 실행했다.
+Baseline 실패 Case를 분류했다.
 
-Case별 Selected Model을 확인할 수 있다.
+Routing Failure와 Model Quality Failure를 구분했다.
 
-Quality / Cost / Latency를 확인할 수 있다.
+Cost / Latency Failure를 별도로 확인했다.
 
-Expected Condition과 Actual Result를 비교할 수 있다.
+실패 유형별 실제 Case가 존재하는지 확인했다.
 
-실패 Case를 목록으로 남겼다.
+다음 Phase에서 검토할 문제를 정리했다.
 ```
 
-실패를 수정하지 않고도 Phase 3은 완료될 수 있다.
-
-측정은 기록했다. 남은 한계는 Experiment Remaining Limitation에 둔다.
+분류만으로 Phase 4는 완료될 수 있다.
+Routing Policy를 바꾸지 않고도 완료될 수 있다.
 
 ---
 
 # 9. Git Checkpoint
 
 ```text
-experiment: evaluate baseline routing
+experiment: analyze routing failures
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 3가 완료된 뒤에만 연다.
+Phase 4가 완료된 뒤에만 연다.
 
 ```text
-Phase 4
-Routing Failure 분석
+Phase 5
+Quality / Cost / Latency Trade-off 확인
 ```

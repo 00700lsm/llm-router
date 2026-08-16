@@ -19,6 +19,10 @@ public class LlmGateway {
 
     public ModelResponse complete(RoutingDecision decision, String message) {
         ModelDefinition model = modelCatalog.getRequired(decision.selectedModel());
+        return complete(model, message);
+    }
+
+    public ModelResponse complete(ModelDefinition model, String message) {
         return providerClient.complete(model, message);
     }
 }

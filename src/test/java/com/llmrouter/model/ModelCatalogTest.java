@@ -42,6 +42,13 @@ class ModelCatalogTest {
     }
 
     @Test
+    void listsOnlyEnabledModels() {
+        ModelCatalog catalog = new ModelCatalog(List.of(TestModels.disabledSmall(), TestModels.large()), "model-large");
+
+        assertThat(catalog.enabledModels()).extracting(ModelDefinition::id).containsExactly("model-large");
+    }
+
+    @Test
     void failsWhenDefaultModelIsMissing() {
         ModelCatalog catalog = new ModelCatalog(List.of(TestModels.large()), "model-small");
 

@@ -72,14 +72,15 @@ Evaluation은 사용자 요청 흐름과 분리한다.
 
 ```text
 Evaluation Dataset
-        ↓
-Evaluation Runner
-        ↓
-Baseline Router
-        ↓
-Selected Model
-        ↓
-Evaluation Result
+        ├─ Evaluation Runner
+        │      ↓
+        │   Baseline Router
+        │
+        └─ Direct Model Runner
+               ↓
+            Model A / Model B
+               ↓
+            Quality / Latency / Token / Cost
 ```
 
 현재 구조의 핵심은 복잡한 Routing이 아니다.
@@ -1003,19 +1004,77 @@ Quality Result는 아직 수집하지 않는다.
 
 ## 19.2 Direct Model Evaluation
 
-현재 코드에는 Direct Model Runner가 없다.
+Router를 거치지 않고 동일 Request를 각 Enabled Model에 직접 실행한다.
 
-Phase 2에서 Model별 특성 측정이 필요할 때 구현한다.
+```text
+Evaluation Case
+        ├─ Model A
+        ├─ Model B
+        └─ ...
+```
+
+이 경로에서는 Baseline Router를 사용하지 않는다.
+
+확인 값:
+
+```text
+Quality
+
+Model Latency
+
+End-to-End Latency
+
+Input Token
+
+Output Token
+
+Estimated Cost
+```
+
+실행:
+
+```text
+./gradlew bootRun --args='--spring.profiles.active=evaluate-models'
+```
+
+결과는 `evaluation/results/001-model-baseline.json`에 저장한다.
+
+Router Evaluation 결과와 Direct Model Evaluation 결과를 섞지 않는다.
 
 ---
 
 # 20. Quality 평가
 
-현재 코드에는 Quality Evaluator가 없다.
+현재 Quality Evaluator는 Evaluation 전용 Deterministic Checklist다.
 
-Quality 평가는 Runtime Routing과 분리한다.
+```text
+Model Response
+      ↓
+Quality Evaluator
+      ↓
+PASS / FAIL + reason
+```
+
+현재 확인 항목:
+
+```text
+mustInclude
+
+mustNotInclude
+
+requireNoHangul
+
+maxChars
+
+requireJson
+```
+
+이 결과는 Runtime Routing에 사용하지 않는다.
 
 Baseline Runtime에 Judge Model을 추가하지 않는다.
+
+이 Checklist는 요구사항 충족 여부를 확인한다.
+Answer의 미묘한 품질 차이를 완전히 측정한다고 해석하지 않는다.
 
 ---
 
@@ -1190,12 +1249,14 @@ evaluation
 │
 ├─ Evaluation Dataset
 ├─ Evaluation Runner
+├─ Direct Model Runner
+├─ Quality Evaluator
 └─ Evaluation Result
 ```
 
-현재 Evaluation Runner는 Dataset을 읽고 Router 경로로 Case를 실행한다.
+Evaluation Runner는 Dataset을 읽고 Router 경로로 Case를 실행한다.
 
-Direct Model Runner는 아직 구현하지 않았다.
+Direct Model Runner는 Router를 거치지 않고 Enabled Model에 같은 Case를 실행한다.
 
 Package를 나누기 위해 불필요한 Interface를 만들지는 않는다.
 
@@ -1233,6 +1294,9 @@ Evaluation:
 Evaluation Runner
  ├─ Router
  └─ LLM Gateway
+
+Direct Model Runner
+ └─ LLM Gateway
 ```
 
 Router가 다음을 직접 의존하지 않도록 한다.
@@ -1261,6 +1325,8 @@ Model Catalog
 Baseline Router
 
 Cost Calculator
+
+Quality Evaluator
 ```
 
 Baseline Router의 가장 중요한 Test는 단순하다.
@@ -1303,9 +1369,9 @@ Response
 ## Evaluation Test
 
 Evaluation Dataset을 읽고
-최소 한 Case를 실행할 수 있는지 확인한다.
+Router 경로와 Direct Model 경로를 실행할 수 있는지 확인한다.
 
-Test 성공을 Routing Quality 성공으로 해석하지 않는다.
+Test 성공을 Routing Quality 성공이나 Model 품질 성공으로 해석하지 않는다.
 
 ---
 
@@ -1425,12 +1491,10 @@ Evaluation은 별도 경로다.
 
 ```text
 Evaluation Dataset
-       ↓
-Evaluation Runner
-       ↓
-Baseline Router
-       ↓
-Evaluation Result
+       ├─ Evaluation Runner → Baseline Router
+       └─ Direct Model Runner → Enabled Models
+              ↓
+       Evaluation Result
 ```
 
 현재 Baseline에서 의도적으로 단순하게 남겨둔 부분은 다음과 같다.

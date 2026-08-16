@@ -62,7 +62,7 @@ public class ProviderClient {
         } catch (RestClientResponseException exception) {
             throw new LlmRouterException(
                     errorCodeFor(exception.getStatusCode()),
-                    "Provider request failed",
+                    providerFailureMessage(exception),
                     exception
             );
         } catch (ResourceAccessException exception) {
@@ -93,6 +93,18 @@ public class ProviderClient {
             return ErrorCode.PROVIDER_TIMEOUT;
         }
         return ErrorCode.PROVIDER_ERROR;
+    }
+
+    String providerFailureMessage(RestClientResponseException exception) {
+        String body = exception.getResponseBodyAsString();
+        if (body == null || body.isBlank()) {
+            return "Provider request failed: HTTP " + exception.getStatusCode().value();
+        }
+        String trimmed = body.replaceAll("\\s+", " ").trim();
+        if (trimmed.length() > 300) {
+            trimmed = trimmed.substring(0, 300);
+        }
+        return "Provider request failed: HTTP " + exception.getStatusCode().value() + " " + trimmed;
     }
 
     private Usage toUsage(OpenAiChatCompletions.Usage providerUsage) {

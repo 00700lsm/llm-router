@@ -1,11 +1,68 @@
 {
   "cases": [
     {
-      "id": "phase1-001",
-      "category": "GENERAL",
-      "input": "REST와 RPC 차이를 한 문장으로 설명해줘.",
+      "id": "simple-001",
+      "category": "SIMPLE",
+      "input": "다음 문장만 영어로 번역하고, 번역문 외에 다른 설명은 하지 마: 오늘 날씨가 좋다.",
       "expectedCondition": {
-        "minimumQuality": "PASS"
+        "minimumQuality": "PASS",
+        "requireNoHangul": true
+      }
+    },
+    {
+      "id": "simple-002",
+      "category": "SIMPLE",
+      "input": "다음 내용을 한 줄로만 요약해줘. 부가 설명은 하지 마: REST는 HTTP 자원을 중심으로 상태를 표현하고, RPC는 원격 프로시저 호출을 중심으로 동작을 표현한다.",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "mustInclude": ["REST", "RPC"],
+        "maxChars": 160
+      }
+    },
+    {
+      "id": "simple-003",
+      "category": "SIMPLE",
+      "input": "다음을 JSON 객체로만 변환해줘. 코드블록이나 설명 없이 JSON만 출력해: 이름은 민수, 나이는 30살.",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "requireJson": true,
+        "mustInclude": ["30"]
+      }
+    },
+    {
+      "id": "general-001",
+      "category": "GENERAL",
+      "input": "REST와 RPC 차이를 설명해줘.",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "mustInclude": ["REST", "RPC"]
+      }
+    },
+    {
+      "id": "general-002",
+      "category": "GENERAL",
+      "input": "Java Stream의 장단점을 알려줘.",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "mustInclude": ["Stream"]
+      }
+    },
+    {
+      "id": "reasoning-001",
+      "category": "REASONING",
+      "input": "다음 Java 코드에서 Race Condition이 발생할 수 있는지 분석하고, 이유가 있다면 어떤 공유 상태 때문인지 설명해줘.\n\nclass Counter {\n  private int value;\n  void increment() { value++; }\n}",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "mustInclude": ["value", "increment"]
+      }
+    },
+    {
+      "id": "reasoning-002",
+      "category": "REASONING",
+      "input": "API Gateway 뒤에 주문 서비스와 재고 서비스가 있고, 주문 생성 시 재고를 동기 HTTP로 차감한다. 재고 서비스 장애 시 어떤 문제가 생길 수 있는지 분석하고, 동기 호출을 유지하는 방안과 비동기로 바꾸는 방안의 Trade-off를 비교해줘.",
+      "expectedCondition": {
+        "minimumQuality": "PASS",
+        "mustInclude": ["재고", "동기"]
       }
     }
   ]

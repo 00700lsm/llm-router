@@ -36,6 +36,10 @@ public class ModelCatalog {
         return List.copyOf(modelsById.values());
     }
 
+    public List<ModelDefinition> enabledModels() {
+        return list().stream().filter(ModelDefinition::enabled).toList();
+    }
+
     public Optional<ModelDefinition> findById(String id) {
         return Optional.ofNullable(modelsById.get(id));
     }

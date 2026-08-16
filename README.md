@@ -133,34 +133,46 @@ Test 성공을 Routing 품질 성공으로 해석하지 않는다.
 
 ## Evaluation
 
-현재 Evaluation은 Phase 1 최소 골격이다.
+Phase 2 Direct Model Evaluation은 Router를 거치지 않고
+동일 Dataset을 각 Model에 직접 실행한다.
+
+```bash
+export OPENAI_API_KEY=...
+./gradlew bootRun --args='--spring.profiles.active=evaluate-models'
+```
+
+Dataset:
 
 ```text
 evaluation/dataset.json
 ```
 
-Dataset을 읽고 최소 1 Case를 Router 경로로 실행할 수 있는지 Test로 확인한다.
+현재 유형:
+
+```text
+Simple
+General
+Reasoning
+```
+
+결과는 다음 파일에 저장한다.
+
+```text
+evaluation/results/001-model-baseline.json
+```
+
+Quality는 Evaluation 전용 Checklist다. Runtime Routing에 사용하지 않는다.
+
+Router 경로 실행 Test:
 
 ```bash
 ./gradlew test --tests com.llmrouter.evaluation.EvaluationRunnerTest
 ```
 
-아직 하지 않는 것:
+측정 기록:
 
 ```text
-Answer Quality 평가
-
-Direct Model Comparison 실험
-
-Routing Failure 분석
-```
-
-이 측정은 Phase 2 이후에서 진행한다.
-
-결과 파일 위치:
-
-```text
-evaluation/results/
+docs/experiments/001-model-baseline.md
 ```
 
 ---
@@ -170,8 +182,6 @@ evaluation/results/
 ```text
 docs/experiments/
 ```
-
-Phase 1에서는 Experiment를 작성하지 않는다.
 
 ---
 
@@ -188,5 +198,6 @@ Quality Judge를 Runtime Routing에 사용하지 않는다.
 
 현재 Provider는 OpenAI-compatible Chat Completions 하나다.
 
-Evaluation은 실행 골격만 있고 품질 측정은 아직 없다.
+Quality Checklist는 요구사항 충족 여부만 확인한다.
+Answer의 미묘한 품질 차이를 완전히 측정하지 않는다.
 ```

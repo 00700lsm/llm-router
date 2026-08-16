@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 5
-Quality / Cost / Latency Trade-off 확인
+Phase 6
+Routing 기준의 한계 확인
 ```
 
 상태:
@@ -25,84 +25,76 @@ DONE
 
 목표:
 
-요구 품질을 만족하면서 Cost와 Latency가
-Model 선택에 따라 어떻게 달라지는지 확인한다.
+현재 Routing Policy가 어떤 Request에서 한계를 보이는지 확인하고
+더 복잡한 Routing이 필요한지 판단한다.
 
-하나의 종합 Score로 합치지 않는다.
-이 Phase에서 Routing Policy를 바꾸지 않는다.
+이 Phase에서 특정 기술을 도입하지 않는다.
 
 ---
 
-# 2. Phase 4 결과
+# 2. Phase 5 결과
 
 ```text
-현재 정책 위반 ROUTING_FAILURE는 없다.
+Checklist 기준 small로 충분한 Case: 6 / 7
 
-simple-003 = MODEL_QUALITY_FAILURE
-            + ROUTING_FAILURE 후보 (large면 Checklist PASS)
+large만 Checklist PASS: simple-003 (JSON 형식)
 
-reasoning-001 / reasoning-002 = PROVIDER_FAILURE (HTTP 429)
+양쪽 성공 6 Case에서 large Estimated Cost ≈ small 13.4배
 
-CAPABILITY / COST_INEFFICIENCY / LATENCY_FAILURE
-= 현재 Dataset에 실제 Case 없음
+현재 Baseline(default = small)을 바꿀 측정 근거는 부족했다.
 ```
 
-Phase 5 비교에 쓰는 측정은 Phase 2 Direct Model 결과다.
+Phase 6은 이 결과와 Phase 3 / 4 실패 분류를 함께 본다.
 
 ```text
-docs/experiments/001-model-baseline.md
-evaluation/results/001-model-baseline.json
-Gemini 2차: model-small = gemini-2.5-flash
-            model-large = gemini-3.5-flash
+docs/experiments/002-baseline-routing.md
+docs/experiments/003-routing-failure-analysis.md
+docs/experiments/004-quality-cost-latency.md
 ```
 
 새 Provider 호출을 이 Phase의 완료 조건으로 두지 않는다.
-
-Router 경로 결과와 Direct Model 결과를 같은 표에 섞지 않는다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-작은 Model로 충분한 Request는 무엇인가?
+현재 Rule만으로 충분한가?
 
-큰 Model을 사용했을 때 Quality가 실제로 얼마나 증가하는가?
+어떤 Request에서 반복적으로 잘못 Routing되는가?
 
-Quality 증가에 비해 Cost 증가는 어느 정도인가?
+Request 분류 기준이 너무 단순한가?
 
-Latency 증가는 정당화되는가?
+고정 Rule로 표현하기 어려운 Case가 실제로 존재하는가?
 
-같은 품질을 더 낮은 비용으로 처리할 수 있는 Case가 있는가?
+복잡한 Routing을 추가했을 때 얻을 수 있는 이점이 충분한가?
 ```
 
 ---
 
-# 4. Phase 5에서 하지 않을 것
+# 4. Phase 6에서 하지 않을 것
 
 ```text
-Routing Policy 변경
+Semantic Routing 구현
 
-Semantic Routing
+LLM-based Routing 구현
 
-LLM-based Routing
+Cascade 구현
 
-Cascade
+Rule 세분화 구현
 
 Threshold 조정
 
-Quality / Cost / Latency를 한 Score로 합치기
+Capability / Long Context Case 선제 추가
 
-Max Cost / Max Latency를 Dataset Expected에 넣기
-
-Quality Judge를 Runtime Routing에 사용
-
-Dataset Expected를 결과에 맞춰 수정
+Dataset Expected 수정
 
 실패 Case 삭제
 
-Capability / Long Context Case 선제 추가
+Quality Judge를 Runtime Routing에 사용
 ```
+
+후보 목록에 있다는 이유만으로 구현하지 않는다.
 
 ---
 
@@ -113,18 +105,15 @@ Capability / Long Context Case 선제 추가
 ```text
 Routing Policy 변경
 
+새 Routing 구조 도입
+
 Request 유형별 Model 역할 정의
-
-Quality 최소 기준 변경
-
-Cost 상한 / Latency 상한 Dataset 추가
-
-종합 Score 도입
 
 simple-003 형식 FAIL을 Routing 신호로 쓰기
 ```
 
-비교 결과가 바로 Policy 변경은 아니다.
+한계를 기록하는 것과 Policy를 바꾸는 것은 다르다.
+도입하지 않기로 한 결정은 Human Gate 없이 기록할 수 있다.
 
 ---
 
@@ -132,27 +121,25 @@ simple-003 형식 FAIL을 Routing 신호로 쓰기
 
 ---
 
-## T5-01. Case별 Quality / Cost / Latency 비교
+## T6-01. 현재 Policy 한계 확인
 
 상태: `DONE`
 
 목적:
 
-동일 Dataset에서 두 Model의 Quality, Cost, Latency를
-한 축으로 합치지 않고 비교한다.
+기존 측정으로 현재 Rule의 반복 Failure와
+복잡한 Routing이 필요한지 판단한다.
 
 확인 범위:
 
 ```text
-Case별 Quality
+현재 Rule이 Request를 어떻게 다루는가
 
-Case별 Latency
+반복 Routing Failure 여부
 
-Case별 Estimated Cost
+고정 Rule로 표현하기 어려운 Case 존재 여부
 
-small로 Checklist를 만족하는 Case
-
-large만 Checklist를 만족하는 Case
+Semantic / LLM Routing 도입 근거
 ```
 
 하지 않을 것:
@@ -160,75 +147,70 @@ large만 Checklist를 만족하는 Case
 ```text
 Router 변경
 
-새 Evaluation Runner
-
-종합 Score
+새 Dataset Case 추가
 ```
 
 완료 조건:
 
 ```text
-Model별 Quality / Cost / Latency를 따로 기록했다.
+현재 Policy의 반복 Failure를 확인했다.
 
-작은 Model로 충분한 Case를 확인했다.
+더 복잡한 Routing이 필요한지 근거를 기록했다.
 
-큰 Model이 필요한 Case가 실제로 있는지 기록했다.
+도입하지 않았다면 이유를 기록했다.
 ```
 
 관련:
 
 ```text
-REQUIREMENTS FR-15, NFR-03, NFR-09
-ROADMAP Phase 5
-DESIGN 19.2
+REQUIREMENTS FR-04, FR-20
+ROADMAP Phase 6
+DESIGN 3
 ```
 
 ---
 
-## T5-02. Experiment 기록
+## T6-02. Experiment 기록
 
 상태: `DONE`
 
 목적:
 
-Trade-off를 문제 중심으로 남긴다.
+한계 확인을 문제 중심으로 남긴다.
 
 파일:
 
 ```text
-docs/experiments/004-quality-cost-latency.md
+docs/experiments/005-routing-policy-limit.md
 ```
 
 완료 조건:
 
 ```text
-Quality / Cost / Latency를 한 Score로 합치지 않았다.
-
 측정값과 해석을 구분했다.
 
-Routing 기준 변경이 필요한지 판단할 수 있다.
+기술 이름을 정답처럼 쓰지 않았다.
 
-Router를 바꾸지 않기로 한 결정을 명시했다.
+도입하지 않은 이유를 적었다.
 ```
 
 ---
 
-## T5-03. DESIGN / README / TASKS 동기화
+## T6-03. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
 
 목적:
 
-Trade-off 비교 위치를 문서에 맞춘다.
+현재 Policy가 그대로라는 점과
+한계 확인 Experiment 위치를 문서에 맞춘다.
 
 완료 조건:
 
 ```text
-DESIGN이 현재 구조만 기록한다.
+DESIGN에 없는 미래 Routing 구조를 넣지 않는다.
 
-README에서 Experiment 004를 확인할 수 있다.
-
-없는 미래 구조를 DESIGN에 넣지 않는다.
+README에서 Experiment 005를 확인할 수 있다.
 ```
 
 ---
@@ -236,47 +218,48 @@ README에서 Experiment 004를 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T5-01 Case별 비교
+T6-01 한계 확인
       ↓
-T5-02 Experiment
+T6-02 Experiment
       ↓
-T5-03 문서 동기화
+T6-03 문서 동기화
 ```
 
 ---
 
-# 8. Phase 5 완료 조건
+# 8. Phase 6 완료 조건
 
-ROADMAP Phase 5 완료 조건과 같다.
+ROADMAP Phase 6 완료 조건과 같다.
 
 ```text
-Model별 Quality / Cost / Latency Trade-off를 비교했다.
+현재 Routing Policy의 반복 Failure를 확인했다.
 
-작은 Model로 충분한 Case를 확인했다.
+더 복잡한 Routing이 필요한지 근거를 확보했다.
 
-큰 Model이 필요한 Case가 실제로 존재하는지 확인했다.
+필요한 경우 후보를 Human Gate에서 비교했다.
 
-Routing 기준 변경이 필요한지 판단할 수 있다.
+적용했다면 동일 Dataset으로 재평가했다.
+
+도입하지 않았다면 그 이유를 기록했다.
 ```
 
-비교만으로 Phase 5는 완료될 수 있다.
-Routing Policy를 바꾸지 않고도 완료될 수 있다.
+도입하지 않고도 Phase 6은 완료될 수 있다.
 
 ---
 
 # 9. Git Checkpoint
 
 ```text
-experiment: analyze quality cost latency tradeoff
+experiment: analyze routing policy limits
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 5가 완료된 뒤에만 연다.
+Phase 6가 완료된 뒤에만 연다.
 
 ```text
-Phase 6
-Routing 기준의 한계 확인
+Phase 7
+Capability / Provider Failure 확인
 ```

@@ -153,6 +153,14 @@ Request별 Model 선택이 필요하다.
 
 Routing Policy 변경은 Human Gate 대상이다.
 
+현재 Policy 한계 확인:
+
+```text
+docs/experiments/005-routing-policy-limit.md
+```
+
+현재는 Baseline Default를 유지한다.
+
 ---
 
 # 4. Component 구성

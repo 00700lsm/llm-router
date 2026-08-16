@@ -23,7 +23,7 @@ class BaselineRouterTest {
 
         assertThat(decision.requestId()).isEqualTo("req-1");
         assertThat(decision.selectedModel()).isEqualTo("model-small");
-        assertThat(decision.provider()).isEqualTo("OPENAI");
+        assertThat(decision.provider()).isEqualTo("GEMINI");
         assertThat(decision.strategy()).isEqualTo(RoutingStrategy.BASELINE_DEFAULT);
         assertThat(decision.reason()).isEqualTo("configured default model");
     }

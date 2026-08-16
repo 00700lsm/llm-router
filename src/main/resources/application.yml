@@ -6,26 +6,26 @@ llm-router:
   routing:
     default-model: model-small
   provider:
-    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
-    api-key: ${OPENAI_API_KEY:}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+    api-key: ${GEMINI_API_KEY:}
   models:
     - id: model-small
-      provider: OPENAI
-      display-name: GPT-4o mini
-      provider-model: gpt-4o-mini
+      provider: GEMINI
+      display-name: Gemini 2.5 Flash
+      provider-model: gemini-2.5-flash
       enabled: true
-      context-limit: 128000
+      context-limit: 1048576
       tool-calling: true
       structured-output: true
       input-cost-per-million: 0.15
       output-cost-per-million: 0.60
     - id: model-large
-      provider: OPENAI
-      display-name: GPT-4o
-      provider-model: gpt-4o
+      provider: GEMINI
+      display-name: Gemini 2.5 Pro
+      provider-model: gemini-2.5-pro
       enabled: true
-      context-limit: 128000
+      context-limit: 1048576
       tool-calling: true
       structured-output: true
-      input-cost-per-million: 2.50
+      input-cost-per-million: 1.25
       output-cost-per-million: 10.00

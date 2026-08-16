@@ -20,11 +20,11 @@ class ProviderClientTest {
 
     @Test
     void mapsProviderResponseToModelResponse() {
-        OpenAiChatCompletions.Response body = new OpenAiChatCompletions.Response(
-                List.of(new OpenAiChatCompletions.Choice(
-                        new OpenAiChatCompletions.Message("assistant", "hello")
+        GeminiGenerateContent.Response body = new GeminiGenerateContent.Response(
+                List.of(new GeminiGenerateContent.Candidate(
+                        new GeminiGenerateContent.Content("model", List.of(new GeminiGenerateContent.Part("hello")))
                 )),
-                new OpenAiChatCompletions.Usage(12, 24, 36)
+                new GeminiGenerateContent.UsageMetadata(12, 24, 36)
         );
 
         ModelResponse response = client.toModelResponse(body, TestModels.small(), 820);
@@ -32,16 +32,16 @@ class ProviderClientTest {
         assertThat(response.success()).isTrue();
         assertThat(response.content()).isEqualTo("hello");
         assertThat(response.model()).isEqualTo("model-small");
-        assertThat(response.provider()).isEqualTo("OPENAI");
+        assertThat(response.provider()).isEqualTo("GEMINI");
         assertThat(response.latencyMs()).isEqualTo(820);
         assertThat(response.usage()).isEqualTo(new Usage(12, 24, 36));
     }
 
     @Test
     void mapsMissingUsageToUnknownUsage() {
-        OpenAiChatCompletions.Response body = new OpenAiChatCompletions.Response(
-                List.of(new OpenAiChatCompletions.Choice(
-                        new OpenAiChatCompletions.Message("assistant", "hello")
+        GeminiGenerateContent.Response body = new GeminiGenerateContent.Response(
+                List.of(new GeminiGenerateContent.Candidate(
+                        new GeminiGenerateContent.Content("model", List.of(new GeminiGenerateContent.Part("hello")))
                 )),
                 null
         );
@@ -52,8 +52,8 @@ class ProviderClientTest {
     }
 
     @Test
-    void failsWhenProviderResponseHasNoChoices() {
-        OpenAiChatCompletions.Response body = new OpenAiChatCompletions.Response(List.of(), null);
+    void failsWhenProviderResponseHasNoCandidates() {
+        GeminiGenerateContent.Response body = new GeminiGenerateContent.Response(List.of(), null);
 
         assertThatThrownBy(() -> client.toModelResponse(body, TestModels.small(), 10))
                 .isInstanceOf(LlmRouterException.class)

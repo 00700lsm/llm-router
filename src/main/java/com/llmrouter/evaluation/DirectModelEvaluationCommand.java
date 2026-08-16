@@ -41,7 +41,7 @@ public class DirectModelEvaluationCommand implements ApplicationRunner {
         if (properties.getProvider().getApiKey() == null || properties.getProvider().getApiKey().isBlank()) {
             throw new LlmRouterException(
                     ErrorCode.PROVIDER_ERROR,
-                    "Provider API key is not configured. Direct model evaluation was not executed."
+                    "GEMINI_API_KEY is not configured. Direct model evaluation was not executed."
             );
         }
         DirectModelEvaluationReport report = directModelRunner.run();

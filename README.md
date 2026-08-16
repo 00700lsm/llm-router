@@ -58,14 +58,53 @@ Java 21과 Gradle Wrapper가 필요하다.
 
 ## Environment Variables
 
-| Name | Required | Description |
-|---|---|---|
-| `OPENAI_API_KEY` | 실제 Provider 호출 시 필요 | OpenAI API Key |
-| `OPENAI_BASE_URL` | 선택 | 기본값 `https://api.openai.com/v1` |
+실제 Provider 호출에는 **Gemini API Key**가 필요하다.
 
-API Key는 Repository에 저장하지 않는다. `.env`는 gitignore 대상이다.
+프로젝트 루트에 `.env` 파일을 만들고 아래 변수명을 사용한다.
+
+```text
+.env
+```
+
+필수 변수:
+
+```text
+GEMINI_API_KEY
+```
+
+선택 변수:
+
+```text
+GEMINI_BASE_URL
+```
+
+기본값:
+
+```text
+https://generativelanguage.googleapis.com/v1beta
+```
+
+예시:
+
+```bash
+cp .env.example .env
+```
+
+`.env` 내용 예:
+
+```text
+GEMINI_API_KEY=여기에_Gemini_API_Key를_넣는다
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+```
+
+`.env`는 gitignore 대상이다. API Key를 Repository에 커밋하지 않는다.
+
+템플릿 파일은 `.env.example`이다. 여기에는 실제 키를 넣지 않는다.
 
 테스트는 실제 Provider를 호출하지 않으므로 API Key 없이 실행할 수 있다.
+
+키 발급: [Google AI Studio](https://aistudio.google.com/apikey)
+
 
 ---
 
@@ -76,14 +115,14 @@ Model Catalog의 Source of Truth는 `src/main/resources/application.yml`이다.
 현재 등록 Model:
 
 ```text
-model-small → gpt-4o-mini
-model-large → gpt-4o
+model-small → gemini-2.5-flash
+model-large → gemini-2.5-pro
 default-model → model-small
 ```
 
 가격 값은 실제 Billing이 아니라 Evaluation 비교용 예상 단가다.
 
-현재 Provider Client는 OpenAI Chat Completions API 하나를 사용한다.
+현재 Provider Client는 Gemini generateContent API 하나를 사용한다.
 
 두 번째 Provider를 위한 Factory / Registry는 만들지 않았다.
 
@@ -109,7 +148,7 @@ Content-Type: application/json
   "requestId": "...",
   "answer": "...",
   "model": "model-small",
-  "provider": "OPENAI"
+  "provider": "GEMINI"
 }
 ```
 
@@ -137,9 +176,10 @@ Phase 2 Direct Model Evaluation은 Router를 거치지 않고
 동일 Dataset을 각 Model에 직접 실행한다.
 
 ```bash
-export OPENAI_API_KEY=...
 ./gradlew bootRun --args='--spring.profiles.active=evaluate-models'
 ```
+
+실행 전에 `.env`에 `GEMINI_API_KEY`가 있어야 한다.
 
 Dataset:
 
@@ -196,7 +236,7 @@ Provider Failure 시 Fallback / Retry를 하지 않는다.
 
 Quality Judge를 Runtime Routing에 사용하지 않는다.
 
-현재 Provider는 OpenAI-compatible Chat Completions 하나다.
+현재 Provider는 Gemini generateContent API 하나다.
 
 Quality Checklist는 요구사항 충족 여부만 확인한다.
 Answer의 미묘한 품질 차이를 완전히 측정하지 않는다.

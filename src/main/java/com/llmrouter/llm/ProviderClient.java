@@ -2,7 +2,6 @@ package com.llmrouter.llm;
 
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -44,17 +43,14 @@ public class ProviderClient {
 
         long startNanos = System.nanoTime();
         try {
-            OpenAiChatCompletions.Response body = restClient.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
+            GeminiGenerateContent.Response body = restClient.post()
+                    .uri("/models/{model}:generateContent", model.providerModel())
+                    .header("x-goog-api-key", apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .body(new OpenAiChatCompletions.Request(
-                            model.providerModel(),
-                            List.of(new OpenAiChatCompletions.Message("user", message))
-                    ))
+                    .body(GeminiGenerateContent.Request.fromUserMessage(message))
                     .retrieve()
-                    .body(OpenAiChatCompletions.Response.class);
+                    .body(GeminiGenerateContent.Response.class);
             long latencyMs = Duration.ofNanos(System.nanoTime() - startNanos).toMillis();
             return toModelResponse(body, model, latencyMs);
         } catch (LlmRouterException exception) {
@@ -73,15 +69,18 @@ public class ProviderClient {
         }
     }
 
-    ModelResponse toModelResponse(OpenAiChatCompletions.Response body, ModelDefinition model, long latencyMs) {
-        if (body == null || body.choices() == null || body.choices().isEmpty()
-                || body.choices().getFirst() == null
-                || body.choices().getFirst().message() == null) {
+    ModelResponse toModelResponse(GeminiGenerateContent.Response body, ModelDefinition model, long latencyMs) {
+        if (body == null || body.candidates() == null || body.candidates().isEmpty()
+                || body.candidates().getFirst() == null
+                || body.candidates().getFirst().content() == null
+                || body.candidates().getFirst().content().parts() == null
+                || body.candidates().getFirst().content().parts().isEmpty()
+                || body.candidates().getFirst().content().parts().getFirst() == null) {
             throw new LlmRouterException(ErrorCode.PROVIDER_ERROR, "Provider returned an empty response");
         }
 
-        String content = body.choices().getFirst().message().content();
-        Usage usage = toUsage(body.usage());
+        String content = body.candidates().getFirst().content().parts().getFirst().text();
+        Usage usage = toUsage(body.usageMetadata());
         return ModelResponse.success(content, model.id(), model.provider(), usage, latencyMs);
     }
 
@@ -107,14 +106,14 @@ public class ProviderClient {
         return "Provider request failed: HTTP " + exception.getStatusCode().value() + " " + trimmed;
     }
 
-    private Usage toUsage(OpenAiChatCompletions.Usage providerUsage) {
+    private Usage toUsage(GeminiGenerateContent.UsageMetadata providerUsage) {
         if (providerUsage == null) {
             return Usage.unknown();
         }
         return new Usage(
-                providerUsage.promptTokens(),
-                providerUsage.completionTokens(),
-                providerUsage.totalTokens()
+                providerUsage.promptTokenCount(),
+                providerUsage.candidatesTokenCount(),
+                providerUsage.totalTokenCount()
         );
     }
 

@@ -50,7 +50,7 @@ public class LlmRouterProperties {
     }
 
     public static class Provider {
-        private String baseUrl = "https://api.openai.com/v1";
+        private String baseUrl = "https://generativelanguage.googleapis.com/v1beta";
         private String apiKey = "";
 
         public String getBaseUrl() {
@@ -58,7 +58,9 @@ public class LlmRouterProperties {
         }
 
         public void setBaseUrl(String baseUrl) {
-            this.baseUrl = baseUrl == null || baseUrl.isBlank() ? "https://api.openai.com/v1" : baseUrl;
+            this.baseUrl = baseUrl == null || baseUrl.isBlank()
+                    ? "https://generativelanguage.googleapis.com/v1beta"
+                    : baseUrl;
         }
 
         public String getApiKey() {

@@ -16,14 +16,14 @@ public final class TestModels {
     public static ModelDefinition large() {
         return new ModelDefinition(
                 "model-large",
-                "OPENAI",
-                "GPT-4o",
-                "gpt-4o",
+                "GEMINI",
+                "Gemini 2.5 Pro",
+                "gemini-2.5-pro",
                 true,
-                128000,
+                1048576,
                 true,
                 true,
-                new BigDecimal("2.50"),
+                new BigDecimal("1.25"),
                 new BigDecimal("10.00")
         );
     }
@@ -35,11 +35,11 @@ public final class TestModels {
     private static ModelDefinition model(String id, boolean enabled) {
         return new ModelDefinition(
                 id,
-                "OPENAI",
-                "GPT-4o mini",
-                "gpt-4o-mini",
+                "GEMINI",
+                "Gemini 2.5 Flash",
+                "gemini-2.5-flash",
                 enabled,
-                128000,
+                1048576,
                 true,
                 true,
                 new BigDecimal("0.15"),

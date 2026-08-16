@@ -272,7 +272,7 @@ reason
 ```json
 {
   "selectedModel": "model-small",
-  "provider": "OPENAI",
+  "provider": "GEMINI",
   "strategy": "BASELINE_DEFAULT",
   "reason": "configured default model"
 }
@@ -319,29 +319,29 @@ llm-router:
   routing:
     default-model: model-small
   provider:
-    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
-    api-key: ${OPENAI_API_KEY:}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+    api-key: ${GEMINI_API_KEY:}
   models:
     - id: model-small
-      provider: OPENAI
-      display-name: GPT-4o mini
-      provider-model: gpt-4o-mini
+      provider: GEMINI
+      display-name: Gemini 2.5 Flash
+      provider-model: gemini-2.5-flash
       enabled: true
-      context-limit: 128000
+      context-limit: 1048576
       tool-calling: true
       structured-output: true
       input-cost-per-million: 0.15
       output-cost-per-million: 0.60
 
     - id: model-large
-      provider: OPENAI
-      display-name: GPT-4o
-      provider-model: gpt-4o
+      provider: GEMINI
+      display-name: Gemini 2.5 Pro
+      provider-model: gemini-2.5-pro
       enabled: true
-      context-limit: 128000
+      context-limit: 1048576
       tool-calling: true
       structured-output: true
-      input-cost-per-million: 2.50
+      input-cost-per-million: 1.25
       output-cost-per-million: 10.00
 ```
 
@@ -552,7 +552,7 @@ Latency
 
 공통 Model Response로 변환한다.
 
-현재 Provider Client는 OpenAI Chat Completions API 하나를 사용한다.
+현재 Provider Client는 Gemini generateContent API 하나를 사용한다.
 
 미래 확장만을 위해 Factory / Registry 계층을 미리 만들지 않는다.
 
@@ -630,7 +630,7 @@ Failure 반환 / 기록
 {
   "answer": "...",
   "model": "model-small",
-  "provider": "OPENAI"
+  "provider": "GEMINI"
 }
 ```
 
@@ -641,7 +641,7 @@ Failure 반환 / 기록
   "requestId": "...",
   "answer": "...",
   "model": "model-small",
-  "provider": "OPENAI"
+  "provider": "GEMINI"
 }
 ```
 
@@ -832,7 +832,7 @@ success / failure
 requestId=abc123
 strategy=BASELINE_DEFAULT
 model=model-small
-provider=OPENAI
+provider=GEMINI
 modelLatency=820ms
 endToEndLatency=845ms
 inputTokens=120
@@ -1185,13 +1185,15 @@ Environment Variable
 
 으로 주입한다.
 
-현재 사용 환경 변수:
+프로젝트 루트 `.env`에서 읽는다.
 
 ```text
-OPENAI_API_KEY
+GEMINI_API_KEY
 
-OPENAI_BASE_URL
+GEMINI_BASE_URL
 ```
+
+`.env`는 gitignore 대상이다.
 
 Model 정보와 가격 정보처럼 Secret이 아닌 설정은
 Application Configuration에서 관리할 수 있다.

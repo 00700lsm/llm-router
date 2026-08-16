@@ -65,7 +65,7 @@ class ChatApiIntegrationTest {
                 .andExpect(jsonPath("$.requestId").isNotEmpty())
                 .andExpect(jsonPath("$.answer").isNotEmpty())
                 .andExpect(jsonPath("$.model").value("model-small"))
-                .andExpect(jsonPath("$.provider").value("OPENAI"))
+                .andExpect(jsonPath("$.provider").value("GEMINI"))
                 .andExpect(jsonPath("$.routingReason").doesNotExist())
                 .andExpect(jsonPath("$.cost").doesNotExist())
                 .andExpect(jsonPath("$.latency").doesNotExist());

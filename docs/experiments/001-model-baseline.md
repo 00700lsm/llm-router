@@ -146,4 +146,8 @@ Checklist Quality는 키워드/형식 충족만 본다.
 HTTP 429를 RATE_LIMIT로 묶고 있어 quota 소진과 호출 제한이 같은 ErrorCode다.
 
 Phase 2 완료 조건은 아직 만족하지 않는다.
+
+이후 Provider는 Gemini로 전환했다.
+본 Experiment의 14 Case 결과는 OpenAI 호출 결과이며
+Gemini 품질 측정 결과가 아니다.
 ```

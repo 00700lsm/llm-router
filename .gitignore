@@ -5,5 +5,7 @@ build/
 .DS_Store
 .blog/
 .env
+.env.local
+!.env.example
 evaluation/results/*
 !evaluation/results/.gitkeep

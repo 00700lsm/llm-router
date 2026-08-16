@@ -335,14 +335,14 @@ llm-router:
 
     - id: model-large
       provider: GEMINI
-      display-name: Gemini 2.5 Pro
-      provider-model: gemini-2.5-pro
+      display-name: Gemini 3.5 Flash
+      provider-model: gemini-3.5-flash
       enabled: true
       context-limit: 1048576
       tool-calling: true
       structured-output: true
-      input-cost-per-million: 1.25
-      output-cost-per-million: 10.00
+      input-cost-per-million: 1.50
+      output-cost-per-million: 9.00
 ```
 
 `id`는 Router 내부 식별자다.
@@ -1192,6 +1192,10 @@ GEMINI_API_KEY
 
 GEMINI_BASE_URL
 ```
+
+`.env`는 `DotEnvEnvironmentPostProcessor`가
+`application.yml` placeholder 해석 전에 로드한다.
+등록 위치는 `META-INF/spring.factories`다.
 
 `.env`는 gitignore 대상이다.
 

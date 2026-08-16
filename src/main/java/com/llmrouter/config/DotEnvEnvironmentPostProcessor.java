@@ -8,12 +8,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
-public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor {
+public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     static final String PROPERTY_SOURCE_NAME = "dotenv";
     private static final Path ENV_FILE = Path.of(".env");
@@ -74,6 +76,11 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor 
             return null;
         }
         return new ParsedLine(key, value);
+    }
+
+    @Override
+    public int getOrder() {
+        return ConfigDataEnvironmentPostProcessor.ORDER - 1;
     }
 
     private static String unquote(String value) {

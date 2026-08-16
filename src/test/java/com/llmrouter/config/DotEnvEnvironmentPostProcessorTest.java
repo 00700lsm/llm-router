@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 
 class DotEnvEnvironmentPostProcessorTest {
 
@@ -34,5 +35,11 @@ class DotEnvEnvironmentPostProcessorTest {
         assertThat(DotEnvEnvironmentPostProcessor.parseLine("")).isNull();
         assertThat(DotEnvEnvironmentPostProcessor.parseLine("NOVALUE")).isNull();
         assertThat(DotEnvEnvironmentPostProcessor.parseLine("GEMINI_API_KEY=abc").value()).isEqualTo("abc");
+    }
+
+    @Test
+    void loadsBeforeApplicationYmlPlaceholders() {
+        assertThat(new DotEnvEnvironmentPostProcessor().getOrder())
+                .isLessThan(ConfigDataEnvironmentPostProcessor.ORDER);
     }
 }

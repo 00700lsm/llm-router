@@ -21,11 +21,11 @@ llm-router:
       output-cost-per-million: 0.60
     - id: model-large
       provider: GEMINI
-      display-name: Gemini 2.5 Pro
-      provider-model: gemini-2.5-pro
+      display-name: Gemini 3.5 Flash
+      provider-model: gemini-3.5-flash
       enabled: true
       context-limit: 1048576
       tool-calling: true
       structured-output: true
-      input-cost-per-million: 1.25
-      output-cost-per-million: 10.00
+      input-cost-per-million: 1.50
+      output-cost-per-million: 9.00

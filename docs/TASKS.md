@@ -20,7 +20,7 @@ Model별 Baseline 특성 측정
 상태:
 
 ```text
-IN PROGRESS
+DONE
 ```
 
 목표:
@@ -272,7 +272,7 @@ DESIGN 19.2
 
 ## T2-04. Model Baseline 측정 실행
 
-상태: `BLOCKED`
+상태: `DONE`
 
 목적:
 
@@ -288,15 +288,21 @@ DESIGN 19.2
 측정값과 추측을 구분한다.
 ```
 
-차단 이유:
+실행 결과:
 
 ```text
-Provider 호출은 되었으나 14 / 14가 credit_balance_exhausted 로 실패했다.
+결과 파일: evaluation/results/001-model-baseline.json
 
-크레딧 부족을 Model Quality 결과로 기록하지 않는다.
+Human Gate A: model-large → gemini-3.5-flash 후 재측정
+
+model-small (gemini-2.5-flash): 7 / 7 호출 성공, Quality 6 / 7 PASS
+
+model-large (gemini-3.5-flash): 6 / 7 호출 성공, Quality 6 / 7 PASS
+reasoning-001 HTTP 503 high demand
+errorCode = PROVIDER_ERROR
 ```
 
-가짜 측정값을 Experiment에 쓰지 않는다.
+404와 503을 Model Quality 결과로 기록하지 않는다.
 
 ---
 
@@ -407,6 +413,8 @@ Model 특성 차이를 Experiment에 기록했다.
 ```
 
 이 단계에서는 Router를 개선하지 않는다.
+
+측정은 기록했다. 남은 한계는 Experiment Remaining Limitation에 둔다.
 
 ---
 

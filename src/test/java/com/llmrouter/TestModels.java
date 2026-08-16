@@ -17,14 +17,14 @@ public final class TestModels {
         return new ModelDefinition(
                 "model-large",
                 "GEMINI",
-                "Gemini 2.5 Pro",
-                "gemini-2.5-pro",
+                "Gemini 3.5 Flash",
+                "gemini-3.5-flash",
                 true,
                 1048576,
                 true,
                 true,
-                new BigDecimal("1.25"),
-                new BigDecimal("10.00")
+                new BigDecimal("1.50"),
+                new BigDecimal("9.00")
         );
     }
 

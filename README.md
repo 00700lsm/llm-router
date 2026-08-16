@@ -116,7 +116,7 @@ Model Catalog의 Source of Truth는 `src/main/resources/application.yml`이다.
 
 ```text
 model-small → gemini-2.5-flash
-model-large → gemini-2.5-pro
+model-large → gemini-3.5-flash
 default-model → model-small
 ```
 

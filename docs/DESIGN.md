@@ -989,6 +989,8 @@ Selected Model
 
 Routing Reason
 
+Quality
+
 Latency
 
 Token
@@ -998,7 +1000,16 @@ Cost
 success / error
 ```
 
-Quality Result는 아직 수집하지 않는다.
+Quality Result는 Evaluation 전용 Checklist다.
+Runtime Routing에는 사용하지 않는다.
+
+실행:
+
+```text
+./gradlew bootRun --args='--spring.profiles.active=evaluate-routing'
+```
+
+결과는 `evaluation/results/002-baseline-routing.json`에 저장한다.
 
 ---
 
@@ -1080,7 +1091,8 @@ Answer의 미묘한 품질 차이를 완전히 측정한다고 해석하지 않�
 
 # 21. Failure 분류
 
-현재 Evaluation Result는 실행 성공/실패와 Error Code를 남긴다.
+현재 Evaluation Result는 실행 성공/실패, Selected Model,
+Quality Checklist, Latency, Token, Cost, Error Code를 남긴다.
 
 Failure Type 분류는 아직 구현하지 않았다.
 

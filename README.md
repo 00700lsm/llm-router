@@ -179,6 +179,24 @@ Phase 2 Direct Model Evaluation은 Router를 거치지 않고
 ./gradlew bootRun --args='--spring.profiles.active=evaluate-models'
 ```
 
+결과는 다음 파일에 저장한다.
+
+```text
+evaluation/results/001-model-baseline.json
+```
+
+Phase 3 Baseline Routing Evaluation은 Router 경로로 Dataset을 실행한다.
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=evaluate-routing'
+```
+
+결과는 다음 파일에 저장한다.
+
+```text
+evaluation/results/002-baseline-routing.json
+```
+
 실행 전에 `.env`에 `GEMINI_API_KEY`가 있어야 한다.
 
 Dataset:
@@ -195,12 +213,6 @@ General
 Reasoning
 ```
 
-결과는 다음 파일에 저장한다.
-
-```text
-evaluation/results/001-model-baseline.json
-```
-
 Quality는 Evaluation 전용 Checklist다. Runtime Routing에 사용하지 않는다.
 
 Router 경로 실행 Test:
@@ -213,6 +225,7 @@ Router 경로 실행 Test:
 
 ```text
 docs/experiments/001-model-baseline.md
+docs/experiments/002-baseline-routing.md
 ```
 
 ---

@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 2
-Model별 Baseline 특성 측정
+Phase 3
+Baseline Routing 평가
 ```
 
 상태:
@@ -25,46 +25,47 @@ DONE
 
 목표:
 
-Router를 평가하기 전에 각 Model이 현재 Dataset에서
-실제로 어떤 Quality / Latency / Token / Cost 특성을 가지는지 측정한다.
+Phase 1 Baseline Router를 현재 Dataset으로 평가하고
+실패 Case를 수집한다.
 
-이 Phase에서는 Router를 개선하지 않는다.
+이 Phase에서는 발견한 문제를 바로 고치지 않는다.
 
 ---
 
-# 2. Phase 1 결과
+# 2. Phase 2 결과
 
 ```text
-Baseline Router 존재
+Direct Model Runner로 Model 특성을 측정했다.
+
+model-small = gemini-2.5-flash
+model-large = gemini-3.5-flash
+
+Router는 바꾸지 않았다.
 strategy = BASELINE_DEFAULT
-모든 일반 Request → Configured Default Model
 ```
 
-Phase 2는 이 Router를 바꾸지 않는다.
+Phase 3는 이 Router를 바꾸지 않는다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-Simple Request에서 Model별 품질 차이가 있는가?
+Router는 어떤 Model을 선택하는가?
 
-General Request에서는 차이가 있는가?
+Simple Request에서 불필요하게 큰 Model을 선택하는가?
 
-Reasoning Request에서는 차이가 커지는가?
+Reasoning Request에서 충분한 Model을 선택하는가?
 
-Model별 Latency 차이는 어느 정도인가?
-
-Token 사용량은 어떻게 다른가?
-
-Cost 차이는 어느 정도인가?
+Routing 결과가 Quality / Cost / Latency 조건을 만족하는가?
 ```
 
-이름이나 가격만 보고 성능을 가정하지 않는다.
+현재 Dataset에는 Capability Required Case가 없다.
+이 Phase에서 Capability Case를 미리 넣지 않는다.
 
 ---
 
-# 4. Phase 2에서 하지 않을 것
+# 4. Phase 3에서 하지 않을 것
 
 ```text
 Routing Policy 변경
@@ -75,15 +76,13 @@ LLM-based Routing
 
 Fallback / Retry
 
-Capability 기반 후보 제외
-
 Quality Judge를 Runtime Routing에 사용
 
-Long Context / Capability / Cost-sensitive Case를 Dataset에 미리 확장
+Dataset Expected를 결과에 맞춰 수정
 
-실패 Case를 Dataset에서 삭제
+실패 Case 삭제
 
-측정 없이 큰 Model이 더 좋다고 단정
+Capability / Long Context Case 선제 추가
 ```
 
 ---
@@ -97,21 +96,12 @@ Routing Policy 변경
 
 Quality 기준을 Runtime Routing에 사용
 
-LLM Judge를 Runtime에 도입
-
 Evaluation Dataset Expected를 결과 맞춰 수정
+
+Allowed Models / Max Cost / Max Latency를 Dataset에 새로 넣어 평가 기준을 바꾸기
 ```
 
-Phase 2 Quality 기준은 Evaluation 전용이다.
-
-```text
-Deterministic Checklist
-PASS / FAIL
-Runtime Router와 분리
-```
-
-이 기준은 현재 Dataset의 요구사항 충족 여부를 확인하기 위한 것이다.
-Answer의 미묘한 품질 차이를 완전히 측정한다고 주장하지 않는다.
+Phase 3 Quality 기준은 기존 expectedCondition Checklist다.
 
 ---
 
@@ -119,124 +109,20 @@ Answer의 미묘한 품질 차이를 완전히 측정한다고 주장하지 않�
 
 ---
 
-## T2-01. Evaluation Dataset 확장
+## T3-01. Router Evaluation 결과 확장
 
 상태: `DONE`
 
 목적:
 
-Simple / General / Reasoning Case를 동일 실험에 사용할 수 있게 한다.
+Router 경로 실행 결과에 Selected Model, Quality, Latency, Cost를 남긴다.
 
 구현 범위:
 
 ```text
-evaluation/dataset.json
+EvaluationRunner
 
-각 유형 2개 이상 Case
-
-expectedCondition
-```
-
-하지 않을 것:
-
-```text
-Long Context
-
-Capability Required
-
-Provider Failure Case
-
-Expected Model 하나를 정답으로 고정
-```
-
-완료 조건:
-
-```text
-Simple / General / Reasoning Case가 있다.
-
-각 Case에 확인 가능한 expectedCondition이 있다.
-```
-
-관련:
-
-```text
-REQUIREMENTS 5.1-5.3, 10.1-10.3
-ROADMAP Phase 2 Evaluation Dataset
-```
-
----
-
-## T2-02. Quality Evaluator
-
-상태: `DONE`
-
-목적:
-
-Answer Quality를 Routing 결과와 분리해서 PASS / FAIL로 확인한다.
-
-구현 범위:
-
-```text
-요청 충족 여부 Checklist
-
-mustInclude
-
-형식 제약
-```
-
-하지 않을 것:
-
-```text
-Runtime Router에 Quality 결과 사용
-
-LLM Judge 도입
-
-Quality / Cost / Latency를 한 Score로 합치기
-```
-
-완료 조건:
-
-```text
-Case의 expectedCondition으로 PASS / FAIL을 판정할 수 있다.
-
-판정 이유를 확인할 수 있다.
-
-Unit Test가 있다.
-```
-
-관련:
-
-```text
-REQUIREMENTS FR-16
-DESIGN 20
-```
-
----
-
-## T2-03. Direct Model Runner
-
-상태: `DONE`
-
-목적:
-
-Router를 거치지 않고 동일 Request를 각 Model에 직접 실행한다.
-
-구현 범위:
-
-```text
-Enabled Model 목록
-
-Case × Model 실행
-
-Quality
-
-Model Latency
-
-End-to-End Latency
-
-Input / Output Token
-
-Estimated Cost
+Quality Evaluator 비교
 
 결과 파일 저장
 ```
@@ -244,17 +130,19 @@ Estimated Cost
 하지 않을 것:
 
 ```text
-Router 경로와 결과 섞기
+Router 변경
 
-실패한 Model을 다른 Model로 대체
+Failure Type Enum을 Runtime에 넣기
 ```
 
 완료 조건:
 
 ```text
-동일 Dataset을 두 Model 이상에 실행할 수 있다.
+Router 경로로 Dataset을 실행할 수 있다.
 
-Router를 사용하지 않는다.
+Case별 Selected Model을 확인할 수 있다.
+
+Quality / Latency / Cost를 확인할 수 있다.
 
 결과가 evaluation/results에 저장된다.
 
@@ -264,24 +152,25 @@ Test Double로 Runner Test가 있다.
 관련:
 
 ```text
-REQUIREMENTS FR-15
-DESIGN 19.2
+REQUIREMENTS FR-07, FR-15, FR-16
+ROADMAP Phase 3
+DESIGN 19.1
 ```
 
 ---
 
-## T2-04. Model Baseline 측정 실행
+## T3-02. Baseline Routing 측정 실행
 
 상태: `DONE`
 
 목적:
 
-실제 Model 호출로 Phase 2 핵심 질문에 답할 측정값을 얻는다.
+실제 Router 경로로 현재 Dataset을 실행한다.
 
 완료 조건:
 
 ```text
-각 Model을 동일 Dataset으로 실행했다.
+전체 Dataset을 Baseline Router로 실행했다.
 
 실행 결과를 파일로 남겼다.
 
@@ -291,33 +180,34 @@ DESIGN 19.2
 실행 결과:
 
 ```text
-결과 파일: evaluation/results/001-model-baseline.json
+결과 파일: evaluation/results/002-baseline-routing.json
 
-Human Gate A: model-large → gemini-3.5-flash 후 재측정
+7 / 7 selectedModel = model-small
+strategy = BASELINE_DEFAULT
 
-model-small (gemini-2.5-flash): 7 / 7 호출 성공, Quality 6 / 7 PASS
+호출 성공 5 / 7
+Quality PASS 4 / 7
 
-model-large (gemini-3.5-flash): 6 / 7 호출 성공, Quality 6 / 7 PASS
-reasoning-001 HTTP 503 high demand
-errorCode = PROVIDER_ERROR
+실패:
+simple-003 Quality FAIL (JSON 형식)
+reasoning-001 HTTP 429 RATE_LIMIT
+reasoning-002 HTTP 429 RATE_LIMIT
 ```
-
-404와 503을 Model Quality 결과로 기록하지 않는다.
 
 ---
 
-## T2-05. Experiment 기록
+## T3-03. Experiment 기록
 
 상태: `DONE`
 
 목적:
 
-측정 결과를 문제 중심으로 남긴다.
+Router 평가 결과를 문제 중심으로 남긴다.
 
 파일:
 
 ```text
-docs/experiments/001-model-baseline.md
+docs/experiments/002-baseline-routing.md
 ```
 
 포함할 내용:
@@ -343,35 +233,31 @@ Remaining Limitation
 완료 조건:
 
 ```text
-Quality / Latency / Token / Cost를 따로 기록했다.
+Case별 Selected Model을 기록했다.
+
+Quality / Cost / Latency를 따로 기록했다.
 
 실패 Case를 삭제하지 않았다.
 
 Router를 바꾸지 않기로 한 결정을 명시했다.
 ```
 
-관련:
-
-```text
-ROADMAP Phase 2 Experiment
-```
-
 ---
 
-## T2-06. DESIGN / README / TASKS 동기화
+## T3-04. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
 
 목적:
 
-현재 코드와 실행 방법을 문서에 맞춘다.
+Router Evaluation 실행 방법을 문서에 맞춘다.
 
 완료 조건:
 
 ```text
-DESIGN에 Direct Model Runner와 Quality Evaluator가 현재 구조로 기록된다.
+DESIGN 19.1이 현재 Router Evaluation 결과를 반영한다.
 
-README에서 Direct Model Evaluation 실행 방법을 확인할 수 있다.
+README에서 Router Evaluation 실행 방법을 확인할 수 있다.
 
 없는 미래 구조를 DESIGN에 넣지 않는다.
 ```
@@ -381,38 +267,34 @@ README에서 Direct Model Evaluation 실행 방법을 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T2-01 Dataset
+T3-01 Runner
       ↓
-T2-02 Quality Evaluator
+T3-02 실제 측정
       ↓
-T2-03 Direct Model Runner
+T3-03 Experiment
       ↓
-T2-04 실제 측정
-      ↓
-T2-05 Experiment
-      ↓
-T2-06 문서 동기화
+T3-04 문서 동기화
 ```
 
 ---
 
-# 8. Phase 2 완료 조건
+# 8. Phase 3 완료 조건
 
-ROADMAP Phase 2 완료 조건과 같다.
+ROADMAP Phase 3 완료 조건과 같다.
 
 ```text
-각 Model을 동일 Dataset으로 실행했다.
+Baseline Router를 전체 Dataset으로 실행했다.
 
-Model별 Quality 결과를 확인할 수 있다.
+Case별 Selected Model을 확인할 수 있다.
 
-Model별 Latency를 확인할 수 있다.
+Quality / Cost / Latency를 확인할 수 있다.
 
-Model별 Token / Cost를 확인할 수 있다.
+Expected Condition과 Actual Result를 비교할 수 있다.
 
-Model 특성 차이를 Experiment에 기록했다.
+실패 Case를 목록으로 남겼다.
 ```
 
-이 단계에서는 Router를 개선하지 않는다.
+실패를 수정하지 않고도 Phase 3은 완료될 수 있다.
 
 측정은 기록했다. 남은 한계는 Experiment Remaining Limitation에 둔다.
 
@@ -421,16 +303,16 @@ Model 특성 차이를 Experiment에 기록했다.
 # 9. Git Checkpoint
 
 ```text
-experiment: measure model baseline
+experiment: evaluate baseline routing
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 2가 완료된 뒤에만 연다.
+Phase 3가 완료된 뒤에만 연다.
 
 ```text
-Phase 3
-Baseline Routing 평가
+Phase 4
+Routing Failure 분석
 ```

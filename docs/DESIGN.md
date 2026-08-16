@@ -20,6 +20,8 @@ strategy = BASELINE_DEFAULT
 
 ```text
 docs/experiments/008-routing-re-evaluation.md
+docs/experiments/009-final-comparison.md
+docs/adr/
 ```
 
 다음 구조는 현재 DESIGN에 포함하지 않는다.

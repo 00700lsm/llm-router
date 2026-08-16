@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 8
-Routing 구조 재평가
+Phase 9
+최종 비교 및 회고
 ```
 
 상태:
@@ -25,84 +25,71 @@ DONE
 
 목표:
 
-지금까지의 Experiment로
-현재 Router가 REQUIREMENTS를 어느 정도 만족하는지 확인한다.
+최종 구조를 정리하고
+학습 목표와 REQUIREMENTS를 실제 결과로 평가한다.
 
 추가 기술을 넣지 않는다.
+Dataset Expected를 바꾸지 않는다.
 
 ---
 
-# 2. Phase 7 결과
+# 2. Phase 8 결과
 
 ```text
-CAPABILITY_MISMATCH는 Production Catalog / Dataset에서 없다.
+현재 Router = Phase 1 Baseline
+strategy = BASELINE_DEFAULT
 
-Router는 Capability / Context Limit을 쓰지 않는다.
+Routing Quality / Cost / Latency 개선을 주장하지 않는다.
 
-Provider Failure는 ErrorCode로 반환한다. Retry / Fallback 없음.
-
-Retry / Fallback / Capability Filter는 사용하지 않았다.
+Semantic / LLM / Cascade / Fallback / Retry / Capability Filter
+는 현재 문제에서 사용하지 않았다.
 ```
-
-Phase 8은 이 결과와 Phase 1~6을 함께 본다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-Routing Failure는 줄었는가?
+Baseline Router는 어떻게 동작했는가?
 
-Quality가 실제로 좋아졌는가?
+Model별 차이는 실제로 무엇이었는가?
 
-Cost가 줄었는가?
+어떤 Routing Failure가 있었는가?
 
-Latency가 악화되지는 않았는가?
+무엇을 선택했고 왜인가?
 
-새 Complexity가 실제 결과로 정당화되는가?
+어떤 기술을 사용하지 않았는가?
 
-아직 해결되지 않은 Requirement는 무엇인가?
+현재 남은 한계는 무엇인가?
+
+Rule과 Evaluation Harness는 역할을 했는가?
 ```
 
 ---
 
-# 4. Phase 8에서 하지 않을 것
-
-```text
-Routing Policy 변경
-
-Semantic Routing
-
-LLM-based Routing
-
-Cascade
-
-Fallback / Retry
-
-Capability Filter
-
-Dataset Expected 수정
-
-새 live Provider 호출을 완료 조건으로 두기
-```
-
----
-
-# 5. Human Gate
-
-다음을 바꾸려면 구현 전에 Human Gate를 연다.
+# 4. Phase 9에서 하지 않을 것
 
 ```text
 Routing Policy 변경
 
 새 Routing 구조 도입
 
-Fallback / Retry
+Dataset Expected 수정
 
-Capability 기반 Routing
+실패 Case 삭제
+
+사용하지 않은 기술을 DESIGN에 현재 구조로 넣기
+
+반복이 약한 Workflow를 Skill로 추출
 ```
 
-재평가 결과가 바로 Policy 변경은 아니다.
+---
+
+# 5. Human Gate
+
+최종 회고에서 Policy를 바꾸려면 구현 전에 Human Gate를 연다.
+
+이번 Phase는 회고만 한다.
 
 ---
 
@@ -110,90 +97,64 @@ Capability 기반 Routing
 
 ---
 
-## T8-01. Baseline vs Current 비교
-
-상태: `DONE`
-
-목적:
-
-동일 Dataset에서 Routing Policy가 바뀌었는지,
-Metric이 달라졌는지 확인한다.
-
-비교 축:
-
-```text
-Routing
-
-Quality
-
-Cost
-
-Latency
-
-Capability
-
-Failure Handling
-```
-
-하지 않을 것:
-
-```text
-Router 변경
-
-종합 Score
-```
-
-완료 조건:
-
-```text
-Baseline과 현재 Router를 동일 조건에서 비교했다.
-
-좋아진 Metric / 나빠진 Metric을 구분했다.
-
-미충족 Requirement를 기록했다.
-```
-
-관련:
-
-```text
-REQUIREMENTS 15
-ROADMAP Phase 8
-```
-
----
-
-## T8-02. Experiment 기록
+## T9-01. REQUIREMENTS 평가와 최종 비교
 
 상태: `DONE`
 
 파일:
 
 ```text
-docs/experiments/008-routing-re-evaluation.md
+docs/experiments/009-final-comparison.md
 ```
 
 완료 조건:
 
 ```text
-사용하지 않은 기술과 이유를 정리했다.
+FR / NFR을 충족 / 부분 / 미충족 / 해당 없음으로 기록했다.
 
-남아 있는 한계를 정리했다.
+최종 비교 질문에 답했다.
 
-측정하지 않은 개선을 주장하지 않았다.
+Dataset이나 기준을 결과에 맞춰 바꾸지 않았다.
 ```
 
 ---
 
-## T8-03. DESIGN / README / TASKS 동기화
+## T9-02. ADR / Harness 회고
+
+상태: `DONE`
+
+파일:
+
+```text
+docs/adr/001-use-gemini-provider.md
+docs/adr/002-use-gemini-3.5-flash-as-large.md
+docs/adr/003-keep-baseline-default.md
+```
+
+완료 조건:
+
+```text
+실제 Decision만 ADR에 남겼다.
+
+Harness 회고와 Skill 후보 판단을 기록했다.
+
+Skill을 미리 추출하지 않았다.
+```
+
+---
+
+## T9-03. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
 
 완료 조건:
 
 ```text
-DESIGN이 현재 Baseline 구조만 기록한다.
+DESIGN은 구현된 Baseline 구조만 기록한다.
 
-README에서 Experiment 008을 확인할 수 있다.
+README에서 최종 Experiment와 ADR 위치를 확인할 수 있다.
+
+다음 Phase는 없다.
 ```
 
 ---
@@ -201,31 +162,27 @@ README에서 Experiment 008을 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T8-01 비교
+T9-01 최종 비교
       ↓
-T8-02 Experiment
+T9-02 ADR / Harness
       ↓
-T8-03 문서 동기화
+T9-03 문서 동기화
 ```
 
 ---
 
-# 8. Phase 8 완료 조건
-
-ROADMAP Phase 8 완료 조건과 같다.
+# 8. Phase 9 완료 조건
 
 ```text
-Baseline과 현재 Router를 동일 조건에서 비교했다.
+최종 구조가 DESIGN과 코드와 같다.
 
-좋아진 Metric을 확인했다.
+REQUIREMENTS를 결과 기준으로 평가했다.
 
-나빠진 Metric도 확인했다.
+사용하지 않은 기술과 이유를 남겼다.
 
-미충족 Requirement를 확인했다.
+남은 한계를 남겼다.
 
-사용하지 않은 기술과 이유를 정리했다.
-
-현재 남아 있는 한계를 정리했다.
+README / DESIGN / TASKS / ADR / Experiment가 현재 상태와 맞다.
 ```
 
 ---
@@ -233,16 +190,13 @@ Baseline과 현재 Router를 동일 조건에서 비교했다.
 # 9. Git Checkpoint
 
 ```text
-experiment: compare baseline and current routing
+docs: complete llm router experiments
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 8가 완료된 뒤에만 연다.
+없다.
 
-```text
-Phase 9
-최종 비교 및 회고
-```
+Phase 9가 마지막이다.

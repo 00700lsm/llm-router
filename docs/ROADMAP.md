@@ -1529,6 +1529,8 @@ docs/experiments/
 007-provider-failure.md
 
 008-routing-re-evaluation.md
+
+009-final-comparison.md
 ```
 
 Experiment 이름은 해결 기술이 아니라 **확인하는 문제**를 기준으로 작성한다.

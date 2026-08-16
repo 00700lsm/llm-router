@@ -4,7 +4,8 @@
 
 현재 목표는 최고의 Router를 만드는 것이 아니다.
 
-**측정 가능한 Baseline Router가 존재하는 것**이 현재 목표다.
+최종 구조도 **측정 가능한 Baseline Router**다.
+복잡한 Routing을 넣지 않은 이유를 Experiment와 ADR에 남긴다.
 
 ---
 
@@ -232,6 +233,7 @@ docs/experiments/005-routing-policy-limit.md
 docs/experiments/006-capability.md
 docs/experiments/007-provider-failure.md
 docs/experiments/008-routing-re-evaluation.md
+docs/experiments/009-final-comparison.md
 ```
 
 ---
@@ -240,6 +242,7 @@ docs/experiments/008-routing-re-evaluation.md
 
 ```text
 docs/experiments/
+docs/adr/
 ```
 
 ---

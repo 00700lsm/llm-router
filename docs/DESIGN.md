@@ -74,18 +74,10 @@ Evaluation은 사용자 요청 흐름과 분리한다.
 Evaluation Dataset
         ↓
 Evaluation Runner
-        ├─ Router Evaluation
-        │      ↓
-        │   Baseline Router
-        │      ↓
-        │   Selected Model
-        │
-        └─ Direct Model Evaluation
-               ↓
-            Model A
-            Model B
-            ...
-
+        ↓
+Baseline Router
+        ↓
+Selected Model
         ↓
 Evaluation Result
 ```
@@ -278,8 +270,8 @@ reason
 
 ```json
 {
-  "selectedModel": "model-default",
-  "provider": "PROVIDER_A",
+  "selectedModel": "model-small",
+  "provider": "OPENAI",
   "strategy": "BASELINE_DEFAULT",
   "reason": "configured default model"
 }
@@ -322,30 +314,41 @@ Application Configuration
 예시 개념:
 
 ```yaml
-models:
-  - id: model-small
-    provider: PROVIDER_A
-    enabled: true
-    context-limit: 128000
-    tool-calling: true
-    structured-output: true
-    input-cost-per-million: 0
-    output-cost-per-million: 0
+llm-router:
+  routing:
+    default-model: model-small
+  provider:
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    api-key: ${OPENAI_API_KEY:}
+  models:
+    - id: model-small
+      provider: OPENAI
+      display-name: GPT-4o mini
+      provider-model: gpt-4o-mini
+      enabled: true
+      context-limit: 128000
+      tool-calling: true
+      structured-output: true
+      input-cost-per-million: 0.15
+      output-cost-per-million: 0.60
 
-  - id: model-large
-    provider: PROVIDER_A
-    enabled: true
-    context-limit: 128000
-    tool-calling: true
-    structured-output: true
-    input-cost-per-million: 0
-    output-cost-per-million: 0
-
-routing:
-  default-model: model-small
+    - id: model-large
+      provider: OPENAI
+      display-name: GPT-4o
+      provider-model: gpt-4o
+      enabled: true
+      context-limit: 128000
+      tool-calling: true
+      structured-output: true
+      input-cost-per-million: 2.50
+      output-cost-per-million: 10.00
 ```
 
-실제 Model 이름과 가격은 현재 사용 환경의 설정값으로 관리한다.
+`id`는 Router 내부 식별자다.
+
+실제 Provider 호출에는 `provider-model`을 사용한다.
+
+가격 값은 실제 Billing이 아니라 Evaluation 비교용 예상 단가다.
 
 Model Catalog의 책임:
 
@@ -392,6 +395,8 @@ provider
 
 displayName
 
+providerModel
+
 enabled
 
 contextLimit
@@ -412,6 +417,7 @@ outputCostPerMillion
 | `id` | Router 내부 Model 식별자 |
 | `provider` | Model Provider |
 | `displayName` | 로그 / Evaluation 표시용 이름 |
+| `providerModel` | Provider API에 전달하는 Model 이름 |
 | `enabled` | Routing 후보 사용 여부 |
 | `contextLimit` | Context 제한 |
 | `toolCalling` | Tool Calling 지원 여부 |
@@ -545,8 +551,9 @@ Latency
 
 공통 Model Response로 변환한다.
 
-단, 현재 Provider가 하나뿐이라면
-미래 확장만을 위해 여러 Factory / Registry 계층을 미리 만들지 않는다.
+현재 Provider Client는 OpenAI Chat Completions API 하나를 사용한다.
+
+미래 확장만을 위해 Factory / Registry 계층을 미리 만들지 않는다.
 
 실제 두 번째 Provider가 추가되는 시점에 필요한 수준으로 확장한다.
 
@@ -622,7 +629,7 @@ Failure 반환 / 기록
 {
   "answer": "...",
   "model": "model-small",
-  "provider": "PROVIDER_A"
+  "provider": "OPENAI"
 }
 ```
 
@@ -633,7 +640,7 @@ Failure 반환 / 기록
   "requestId": "...",
   "answer": "...",
   "model": "model-small",
-  "provider": "PROVIDER_A"
+  "provider": "OPENAI"
 }
 ```
 
@@ -824,7 +831,7 @@ success / failure
 requestId=abc123
 strategy=BASELINE_DEFAULT
 model=model-small
-provider=PROVIDER_A
+provider=OPENAI
 modelLatency=820ms
 endToEndLatency=845ms
 inputTokens=120
@@ -917,23 +924,11 @@ Metric / Failure 분석
 
 현재 Dataset은 Repository 내부 파일로 관리한다.
 
-예:
-
 ```text
 evaluation/
 ├── dataset.json
 └── results/
 ```
-
-또는:
-
-```text
-evaluation/
-├── cases/
-└── results/
-```
-
-실제 저장 형식은 구현 시 가장 단순한 방식을 사용한다.
 
 Database는 필요하지 않다.
 
@@ -993,72 +988,32 @@ Selected Model
 
 Routing Reason
 
-Quality Result
-
 Latency
 
 Token
 
 Cost
+
+success / error
 ```
+
+Quality Result는 아직 수집하지 않는다.
 
 ---
 
 ## 19.2 Direct Model Evaluation
 
-Router 선택의 적절성을 확인하기 위해
-동일 Request를 Model별로 직접 실행할 수 있다.
+현재 코드에는 Direct Model Runner가 없다.
 
-```text
-Evaluation Case
-        ├─ Model A
-        ├─ Model B
-        └─ Model C
-```
-
-이 경로에서는 Router를 사용하지 않는다.
-
-목적은:
-
-```text
-Router가 Model A를 선택했는데
-
-실제로 Model B도 같은 품질을 더 낮은 Cost로 낼 수 있었는가?
-```
-
-같은 질문을 확인하는 것이다.
-
-Router Evaluation과 Direct Model Evaluation 결과를 섞지 않는다.
+Phase 2에서 Model별 특성 측정이 필요할 때 구현한다.
 
 ---
 
 # 20. Quality 평가
 
-현재 Architecture에서 Quality 평가 방식은
-Routing 실행 로직과 분리한다.
+현재 코드에는 Quality Evaluator가 없다.
 
-```text
-Model Response
-      ↓
-Quality Evaluator
-      ↓
-Quality Result
-```
-
-Quality 평가의 구체적인 방식은
-Evaluation Dataset 설계와 Experiment 결과에 따라 조정할 수 있다.
-
-현재 Router가 Quality Evaluator 결과를 Runtime Routing에 사용하지 않는다.
-
-즉:
-
-```text
-Evaluation용 Quality 판단
-≠
-Runtime Router 판단
-```
-
-이다.
+Quality 평가는 Runtime Routing과 분리한다.
 
 Baseline Runtime에 Judge Model을 추가하지 않는다.
 
@@ -1066,9 +1021,11 @@ Baseline Runtime에 Judge Model을 추가하지 않는다.
 
 # 21. Failure 분류
 
-Evaluation Result에서는 실패 위치를 구분할 수 있어야 한다.
+현재 Evaluation Result는 실행 성공/실패와 Error Code를 남긴다.
 
-현재 후보:
+Failure Type 분류는 아직 구현하지 않았다.
+
+이후 Evaluation에서 필요하면 다음 후보를 사용한다.
 
 ```text
 ROUTING_FAILURE
@@ -1169,12 +1126,12 @@ Environment Variable
 
 으로 주입한다.
 
-예:
+현재 사용 환경 변수:
 
 ```text
-PROVIDER_A_API_KEY
+OPENAI_API_KEY
 
-PROVIDER_B_API_KEY
+OPENAI_BASE_URL
 ```
 
 Model 정보와 가격 정보처럼 Secret이 아닌 설정은
@@ -1203,9 +1160,12 @@ api
 ├─ Chat API
 └─ Request / Response
 
+chat
+│
+└─ Chat Service
+
 routing
 │
-├─ Router
 ├─ Baseline Router
 └─ Routing Decision
 
@@ -1224,15 +1184,18 @@ metrics
 │
 ├─ Usage
 ├─ Cost Calculator
-└─ Latency
+└─ Estimated Cost
 
 evaluation
 │
 ├─ Evaluation Dataset
 ├─ Evaluation Runner
-├─ Direct Model Runner
 └─ Evaluation Result
 ```
+
+현재 Evaluation Runner는 Dataset을 읽고 Router 경로로 Case를 실행한다.
+
+Direct Model Runner는 아직 구현하지 않았다.
 
 Package를 나누기 위해 불필요한 Interface를 만들지는 않는다.
 
@@ -1464,9 +1427,8 @@ Evaluation은 별도 경로다.
 Evaluation Dataset
        ↓
 Evaluation Runner
-       ├─ Baseline Router 평가
-       │
-       └─ Model 직접 비교
+       ↓
+Baseline Router
        ↓
 Evaluation Result
 ```

@@ -20,7 +20,7 @@ Baseline Router 구현
 상태:
 
 ```text
-NOT STARTED
+DONE
 ```
 
 목표:
@@ -38,27 +38,9 @@ NOT STARTED
 이미 존재하는 것:
 
 ```text
-Spring Boot 3.5.4 / Java 21 프로젝트 골격
+Spring Boot 3.5.4 / Java 21
 
-LlmRouterApplication
-
-spring-boot-starter-web
-
-spring-boot-starter-validation
-
-docs/REQUIREMENTS.md
-
-docs/DESIGN.md
-
-docs/ROADMAP.md
-
-.cursor/rules/llm-router.mdc
-```
-
-아직 없는 것:
-
-```text
-Chat API
+POST /api/v1/chat
 
 Model Catalog
 
@@ -68,14 +50,14 @@ LLM Gateway / Provider Client
 
 Usage / Cost / Latency
 
-Evaluation Dataset / Runner
+evaluation/dataset.json
 
-README 실행 안내
+Evaluation Runner 최소 골격
+
+README
 ```
 
-Phase 1은 새 프로젝트를 만드는 단계가 아니다.
-
-기존 Spring Boot 골격 위에 Baseline 흐름을 구현한다.
+Phase 1 구현은 기존 Spring Boot 골격 위에 완료했다.
 
 ---
 
@@ -208,7 +190,7 @@ BLOCKED
 
 ## T1-01. Model Catalog
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -279,7 +261,7 @@ DESIGN 5, 6, 23
 
 ## T1-02. Baseline Router
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -357,7 +339,7 @@ DESIGN 3, 4.3, 7
 
 ## T1-03. Usage / Cost / Latency
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -422,7 +404,7 @@ DESIGN 13, 14
 
 ## T1-04. LLM Gateway / Provider Client
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -490,7 +472,7 @@ DESIGN 8, 9, 10, 16
 
 ## T1-05. Chat API / Chat Service
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -525,7 +507,7 @@ Request:
   "requestId": "...",
   "answer": "...",
   "model": "model-small",
-  "provider": "PROVIDER_A"
+  "provider": "OPENAI"
 }
 ```
 
@@ -580,7 +562,7 @@ DESIGN 4.1, 4.2, 11, 12
 
 ## T1-06. Error 처리 / Observability
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -657,7 +639,7 @@ DESIGN 15, 16
 
 ## T1-07. Test
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -718,7 +700,7 @@ ROADMAP Phase 1 Test
 
 ## T1-08. Evaluation 최소 골격
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 
@@ -790,7 +772,7 @@ ROADMAP Phase 1 README
 
 ## T1-09. README / 문서 동기화
 
-상태: `TODO`
+상태: `DONE`
 
 목적:
 

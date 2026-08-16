@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "id": "phase1-001",
+      "category": "GENERAL",
+      "input": "REST와 RPC 차이를 한 문장으로 설명해줘.",
+      "expectedCondition": {
+        "minimumQuality": "PASS"
+      }
+    }
+  ]
+}

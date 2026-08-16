@@ -229,6 +229,8 @@ docs/experiments/002-baseline-routing.md
 docs/experiments/003-routing-failure-analysis.md
 docs/experiments/004-quality-cost-latency.md
 docs/experiments/005-routing-policy-limit.md
+docs/experiments/006-capability.md
+docs/experiments/007-provider-failure.md
 ```
 
 ---
@@ -247,6 +249,8 @@ docs/experiments/
 모든 일반 Request는 Default Model로만 간다.
 
 Request 난이도를 분류하지 않는다.
+
+Capability / Context Limit을 Routing에 사용하지 않는다.
 
 Provider Failure 시 Fallback / Retry를 하지 않는다.
 

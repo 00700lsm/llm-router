@@ -13,8 +13,8 @@
 # 1. 현재 Phase
 
 ```text
-Phase 6
-Routing 기준의 한계 확인
+Phase 7
+Capability / Provider Failure 확인
 ```
 
 상태:
@@ -25,76 +25,66 @@ DONE
 
 목표:
 
-현재 Routing Policy가 어떤 Request에서 한계를 보이는지 확인하고
-더 복잡한 Routing이 필요한지 판단한다.
+Model Capability와 Provider Failure가
+현재 Router 동작에 어떤 영향을 주는지 확인한다.
 
-이 Phase에서 특정 기술을 도입하지 않는다.
+Fallback / Retry를 먼저 넣지 않는다.
+Routing Policy를 바꾸지 않는다.
 
 ---
 
-# 2. Phase 5 결과
+# 2. Phase 6 결과
 
 ```text
-Checklist 기준 small로 충분한 Case: 6 / 7
+현재 정책 위반 ROUTING_FAILURE는 없다.
 
-large만 Checklist PASS: simple-003 (JSON 형식)
+Semantic / LLM Routing은 현재 문제에서 사용하지 않았다.
 
-양쪽 성공 6 Case에서 large Estimated Cost ≈ small 13.4배
-
-현재 Baseline(default = small)을 바꿀 측정 근거는 부족했다.
+Baseline Dataset 7 Case는 그대로 둔다.
 ```
 
-Phase 6은 이 결과와 Phase 3 / 4 실패 분류를 함께 본다.
-
-```text
-docs/experiments/002-baseline-routing.md
-docs/experiments/003-routing-failure-analysis.md
-docs/experiments/004-quality-cost-latency.md
-```
-
-새 Provider 호출을 이 Phase의 완료 조건으로 두지 않는다.
+Phase 7은 기존 Dataset Expected를 바꾸지 않는다.
+Capability / Long Context는 별도 확인이다.
 
 ---
 
 # 3. 핵심 질문
 
 ```text
-현재 Rule만으로 충분한가?
+현재 Catalog에서 Capability Mismatch가 발생하는가?
 
-어떤 Request에서 반복적으로 잘못 Routing되는가?
+Router는 Capability / Context Limit을 보는가?
 
-Request 분류 기준이 너무 단순한가?
+Long Context Request에서 현재 동작은 무엇인가?
 
-고정 Rule로 표현하기 어려운 Case가 실제로 존재하는가?
+Provider Failure 시 현재 시스템은 무엇을 반환하는가?
 
-복잡한 Routing을 추가했을 때 얻을 수 있는 이점이 충분한가?
+Retry / Fallback이 필요한가?
 ```
 
 ---
 
-# 4. Phase 6에서 하지 않을 것
+# 4. Phase 7에서 하지 않을 것
 
 ```text
-Semantic Routing 구현
+Fallback 구현
 
-LLM-based Routing 구현
+Retry 구현
 
-Cascade 구현
+Capability 기반 후보 제외 구현
 
-Rule 세분화 구현
+Routing Policy 변경
 
-Threshold 조정
+Semantic / LLM Routing
 
-Capability / Long Context Case 선제 추가
+Dataset.json Expected 수정
 
-Dataset Expected 수정
+기존 7 Case 삭제
 
-실패 Case 삭제
+Model 추가 / 제거
 
-Quality Judge를 Runtime Routing에 사용
+Catalog Capability 값을 실험용으로 바꾸기
 ```
-
-후보 목록에 있다는 이유만으로 구현하지 않는다.
 
 ---
 
@@ -103,17 +93,18 @@ Quality Judge를 Runtime Routing에 사용
 다음을 바꾸려면 구현 전에 Human Gate를 연다.
 
 ```text
+Fallback / Retry Policy
+
+Capability 기반 Routing
+
+Model 추가 / 제거 / 역할 변경
+
 Routing Policy 변경
 
-새 Routing 구조 도입
-
-Request 유형별 Model 역할 정의
-
-simple-003 형식 FAIL을 Routing 신호로 쓰기
+evaluation/dataset.json Expected 변경
 ```
 
-한계를 기록하는 것과 Policy를 바꾸는 것은 다르다.
-도입하지 않기로 한 결정은 Human Gate 없이 기록할 수 있다.
+현재 동작을 테스트로 재현하는 것은 Human Gate가 아니다.
 
 ---
 
@@ -121,67 +112,113 @@ simple-003 형식 FAIL을 Routing 신호로 쓰기
 
 ---
 
-## T6-01. 현재 Policy 한계 확인
+## T7-01. Capability / Long Context 확인
 
 상태: `DONE`
 
 목적:
 
-기존 측정으로 현재 Rule의 반복 Failure와
-복잡한 Routing이 필요한지 판단한다.
+현재 Catalog와 Router가 Capability / Context Limit을
+어떻게 다루는지 확인한다.
 
 확인 범위:
 
 ```text
-현재 Rule이 Request를 어떻게 다루는가
+Catalog Capability 값
 
-반복 Routing Failure 여부
+Router가 toolCalling / structuredOutput / contextLimit를 쓰는지
 
-고정 Rule로 표현하기 어려운 Case 존재 여부
+미지원 Model을 고를 수 있는지
 
-Semantic / LLM Routing 도입 근거
+Long Context에서 현재 선택
 ```
 
 하지 않을 것:
 
 ```text
-Router 변경
+Capability Filter 구현
 
-새 Dataset Case 추가
+evaluation/dataset.json에 Case 추가
 ```
 
 완료 조건:
 
 ```text
-현재 Policy의 반복 Failure를 확인했다.
+Capability Mismatch 존재 여부를 기록했다.
 
-더 복잡한 Routing이 필요한지 근거를 기록했다.
+Long Context에서 현재 동작을 기록했다.
 
-도입하지 않았다면 이유를 기록했다.
+Test로 Router가 Capability를 무시함을 재현했다.
 ```
 
 관련:
 
 ```text
-REQUIREMENTS FR-04, FR-20
-ROADMAP Phase 6
-DESIGN 3
+REQUIREMENTS FR-08, FR-09
+ROADMAP Phase 7.1, 7.2
+DESIGN 5, 6
 ```
 
 ---
 
-## T6-02. Experiment 기록
+## T7-02. Provider Failure 재현
 
 상태: `DONE`
 
 목적:
 
-한계 확인을 문제 중심으로 남긴다.
+Provider Failure 시 현재 시스템이 실패를 숨기지 않는지 확인한다.
+
+확인 범위:
+
+```text
+RATE_LIMIT
+
+PROVIDER_TIMEOUT
+
+PROVIDER_ERROR
+
+호출 횟수 (Retry 없음)
+```
+
+하지 않을 것:
+
+```text
+Retry
+
+Fallback
+
+새 live Provider 호출을 완료 조건으로 두기
+```
+
+완료 조건:
+
+```text
+Provider Failure를 재현했다.
+
+현재 실패 동작을 기록했다.
+
+Fallback / Retry 필요성을 근거로 판단했다.
+```
+
+관련:
+
+```text
+REQUIREMENTS FR-18, FR-19, NFR-10
+ROADMAP Phase 7.3
+```
+
+---
+
+## T7-03. Experiment 기록
+
+상태: `DONE`
 
 파일:
 
 ```text
-docs/experiments/005-routing-policy-limit.md
+docs/experiments/006-capability.md
+docs/experiments/007-provider-failure.md
 ```
 
 완료 조건:
@@ -189,28 +226,21 @@ docs/experiments/005-routing-policy-limit.md
 ```text
 측정값과 해석을 구분했다.
 
-기술 이름을 정답처럼 쓰지 않았다.
-
-도입하지 않은 이유를 적었다.
+도입하지 않았다면 이유를 적었다.
 ```
 
 ---
 
-## T6-03. DESIGN / README / TASKS 동기화
+## T7-04. DESIGN / README / TASKS 동기화
 
 상태: `DONE`
-
-목적:
-
-현재 Policy가 그대로라는 점과
-한계 확인 Experiment 위치를 문서에 맞춘다.
 
 완료 조건:
 
 ```text
-DESIGN에 없는 미래 Routing 구조를 넣지 않는다.
+DESIGN에 Fallback 구조를 현재 구현처럼 넣지 않는다.
 
-README에서 Experiment 005를 확인할 수 있다.
+README에서 Experiment 006 / 007을 확인할 수 있다.
 ```
 
 ---
@@ -218,48 +248,54 @@ README에서 Experiment 005를 확인할 수 있다.
 # 7. 권장 구현 순서
 
 ```text
-T6-01 한계 확인
+T7-01 Capability / Long Context
       ↓
-T6-02 Experiment
+T7-02 Provider Failure
       ↓
-T6-03 문서 동기화
+T7-03 Experiment
+      ↓
+T7-04 문서 동기화
 ```
 
 ---
 
-# 8. Phase 6 완료 조건
+# 8. Phase 7 완료 조건
 
-ROADMAP Phase 6 완료 조건과 같다.
+ROADMAP Phase 7 완료 조건과 같다.
 
 ```text
-현재 Routing Policy의 반복 Failure를 확인했다.
+Capability Mismatch Case를 확인했다.
 
-더 복잡한 Routing이 필요한지 근거를 확보했다.
+Long Context Case를 확인했다.
 
-필요한 경우 후보를 Human Gate에서 비교했다.
+Provider Failure를 재현했다.
 
-적용했다면 동일 Dataset으로 재평가했다.
+현재 실패 동작을 기록했다.
 
-도입하지 않았다면 그 이유를 기록했다.
+Fallback / Retry 필요성을 근거로 판단했다.
+
+적용했다면 Failure Case를 다시 실행했다.
 ```
 
-도입하지 않고도 Phase 6은 완료될 수 있다.
+적용하지 않고도 Phase 7은 완료될 수 있다.
 
 ---
 
 # 9. Git Checkpoint
 
 ```text
-experiment: analyze routing policy limits
+experiment: verify model capability routing
+
+experiment: reproduce provider failures
 ```
 
 ---
 
 # 10. 다음 Phase
 
-Phase 6가 완료된 뒤에만 연다.
+Phase 7가 완료된 뒤에만 연다.
 
 ```text
-Phase 7
-Capability / Provider Failure 확인
+Phase 8
+Routing 구조 재평가
 ```

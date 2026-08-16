@@ -302,6 +302,22 @@ Quality 예측
 Dynamic Threshold
 
 Fallback 판단
+
+Capability 기반 후보 제외
+
+Context Limit 검사
+```
+
+Capability / Context Limit 확인:
+
+```text
+docs/experiments/006-capability.md
+```
+
+Provider Failure 시 현재 동작:
+
+```text
+docs/experiments/007-provider-failure.md
 ```
 
 ---
@@ -1143,8 +1159,13 @@ EVALUATION_FAILURE
 ROUTING_FAILURE 후보: simple-003
 MODEL_QUALITY_FAILURE: simple-003
 PROVIDER_FAILURE: reasoning-001, reasoning-002
-CAPABILITY_MISMATCH / COST_INEFFICIENCY / LATENCY_FAILURE: 현재 Dataset에 실제 Case 없음
+CAPABILITY_MISMATCH: Production Catalog / Dataset에서 없음
+COST_INEFFICIENCY / LATENCY_FAILURE: 현재 Dataset에 실제 Case 없음
 ```
+
+Capability 필드는 Catalog에 있다. Runtime Routing에는 쓰지 않는다.
+
+Provider Failure는 ErrorCode로 반환한다. Retry / Fallback은 없다.
 
 예:
 
